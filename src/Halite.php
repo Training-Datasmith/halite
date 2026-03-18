@@ -1,8 +1,14 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
 
 use Error;
+
+use function extension_loaded;
+use function implode;
+
 use ParagonIE\ConstantTime\{
     Base32,
     Base32Hex,
@@ -11,12 +17,9 @@ use ParagonIE\ConstantTime\{
     Hex
 };
 use ParagonIE\Halite\Alerts\InvalidType;
-use const
-    SODIUM_LIBRARY_MAJOR_VERSION,
-    SODIUM_LIBRARY_VERSION;
-use function
-    extension_loaded,
-    implode;
+
+use const SODIUM_LIBRARY_MAJOR_VERSION;
+use const SODIUM_LIBRARY_VERSION;
 
 /**
  * Class Halite
@@ -43,22 +46,22 @@ use function
  */
 final class Halite
 {
-    const VERSION              = '5.0.0';
+    public const VERSION              = '5.0.0';
 
-    const HALITE_VERSION_KEYS  = "\x31\x40\x05\x00";
-    const HALITE_VERSION_FILE  = "\x31\x41\x05\x00";
-    const HALITE_VERSION       = "\x31\x42\x05\x00";
+    public const HALITE_VERSION_KEYS  = "\x31\x40\x05\x00";
+    public const HALITE_VERSION_FILE  = "\x31\x41\x05\x00";
+    public const HALITE_VERSION       = "\x31\x42\x05\x00";
 
     /* Raw bytes (decoded) of the underlying ciphertext */
-    const VERSION_TAG_LEN      = 4;
-    const VERSION_PREFIX       = 'MUIFA';
-    const VERSION_OLD_PREFIX   = 'MUIEA';
+    public const VERSION_TAG_LEN      = 4;
+    public const VERSION_PREFIX       = 'MUIFA';
+    public const VERSION_OLD_PREFIX   = 'MUIEA';
 
-    const ENCODE_HEX           = 'hex';
-    const ENCODE_BASE32        = 'base32';
-    const ENCODE_BASE32HEX     = 'base32hex';
-    const ENCODE_BASE64        = 'base64';
-    const ENCODE_BASE64URLSAFE = 'base64urlsafe';
+    public const ENCODE_HEX           = 'hex';
+    public const ENCODE_BASE32        = 'base32';
+    public const ENCODE_BASE32HEX     = 'base32hex';
+    public const ENCODE_BASE64        = 'base64';
+    public const ENCODE_BASE64URLSAFE = 'base64urlsafe';
 
     /**
      * Don't allow this to be instantiated.
@@ -91,7 +94,7 @@ final class Halite
                 '::',
                 [
                     Hex::class,
-                    $decode ? 'decode' : 'encode'
+                    $decode ? 'decode' : 'encode',
                 ]
             );
         }
@@ -100,7 +103,7 @@ final class Halite
                 '::',
                 [
                     Base32::class,
-                    $decode ? 'decode' : 'encode'
+                    $decode ? 'decode' : 'encode',
                 ]
             );
         }
@@ -109,7 +112,7 @@ final class Halite
                 '::',
                 [
                     Base32Hex::class,
-                    $decode ? 'decode' : 'encode'
+                    $decode ? 'decode' : 'encode',
                 ]
             );
         }
@@ -118,7 +121,7 @@ final class Halite
                 '::',
                 [
                     Base64::class,
-                    $decode ? 'decode' : 'encode'
+                    $decode ? 'decode' : 'encode',
                 ]
             );
         }
@@ -127,7 +130,7 @@ final class Halite
                 '::',
                 [
                     Base64UrlSafe::class,
-                    $decode ? 'decode' : 'encode'
+                    $decode ? 'decode' : 'encode',
                 ]
             );
         }
@@ -136,7 +139,7 @@ final class Halite
                 '::',
                 [
                     Hex::class,
-                    $decode ? 'decode' : 'encode'
+                    $decode ? 'decode' : 'encode',
                 ]
             );
         }

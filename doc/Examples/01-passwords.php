@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
-use ParagonIE\Halite\Password;
 use ParagonIE\Halite\KeyFactory;
+use ParagonIE\Halite\Password;
 use ParagonIE\HiddenString\HiddenString;
 
 try {

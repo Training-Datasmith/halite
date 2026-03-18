@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Sodium;
 
 if (\extension_loaded('libsodium')) {
@@ -226,7 +228,8 @@ if (!\extension_loaded('libsodium')) {
      *
      * @return string
      */
-    function crypto_box_keypair(): string {
+    function crypto_box_keypair(): string
+    {
         if (\extension_loaded('sodium')) {
             return \sodium_crypto_box_keypair();
         }
@@ -399,7 +402,7 @@ if (!\extension_loaded('libsodium')) {
         string $input,
         string $key = '',
         int $length = 32
-    ): string{
+    ): string {
         if (\extension_loaded('sodium')) {
             return \sodium_crypto_generichash($input, $key, $length);
         }
@@ -727,7 +730,6 @@ if (!\extension_loaded('libsodium')) {
         return '';
     }
 
-
     /**
      * Generate an Ed25519 keypair for use with the crypto_sign API
      *
@@ -740,7 +742,6 @@ if (!\extension_loaded('libsodium')) {
         }
         return '';
     }
-
 
     /**
      * Create an Ed25519 keypair from an Ed25519 secret key + Ed25519 public key
@@ -1014,7 +1015,8 @@ if (!\extension_loaded('libsodium')) {
      * Get the true major version of libsodium
      * @return int
      */
-    function library_version_major(): int {
+    function library_version_major(): int
+    {
         if (\extension_loaded('sodium')) {
             return \SODIUM_LIBRARY_MAJOR_VERSION;
         }
@@ -1025,7 +1027,8 @@ if (!\extension_loaded('libsodium')) {
      * Get the true minor version of libsodium
      * @return int
      */
-    function library_version_minor(): int {
+    function library_version_minor(): int
+    {
         if (\extension_loaded('sodium')) {
             return \SODIUM_LIBRARY_MINOR_VERSION;
         }
@@ -1068,7 +1071,8 @@ if (!\extension_loaded('libsodium')) {
      *
      * @return string
      */
-    function version_string(): string {
+    function version_string(): string
+    {
         if (\extension_loaded('sodium')) {
             return \sodium_version_string();
         }

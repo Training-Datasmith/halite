@@ -1,9 +1,21 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Symmetric;
 
 use Error;
+
+use function hash_equals;
+use function is_callable;
+use function is_null;
+
 use ParagonIE\ConstantTime\Binary;
+use ParagonIE\Halite\{
+    Halite,
+    Symmetric\Config as SymmetricConfig,
+    Util
+};
 use ParagonIE\Halite\Alerts\{
     CannotPerformOperation,
     InvalidDigestLength,
@@ -11,30 +23,22 @@ use ParagonIE\Halite\Alerts\{
     InvalidSignature,
     InvalidType
 };
-use ParagonIE\Halite\{
-    Config as BaseConfig, 
-    Halite, 
-    Symmetric\Config as SymmetricConfig,
-    Util
-};
 use ParagonIE\HiddenString\HiddenString;
+
+use function random_bytes;
+
 use RangeException;
+
+use function sodium_crypto_generichash;
+
+use const SODIUM_CRYPTO_STREAM_NONCEBYTES;
+
+use function sodium_crypto_stream_xchacha20_xor;
+use function sodium_crypto_stream_xor;
+
 use SodiumException;
 use Throwable;
 use TypeError;
-use const
-    SODIUM_CRYPTO_AUTH_KEYBYTES,
-    SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
-    SODIUM_CRYPTO_STREAM_NONCEBYTES;
-use function
-    hash_equals,
-    is_callable,
-    is_null,
-    random_bytes,
-    sodium_crypto_generichash,
-    sodium_crypto_stream_xchacha20_xor,
-    sodium_crypto_stream_xor,
-    str_repeat;
 
 /**
  * Class Crypto
@@ -201,7 +205,7 @@ final class Crypto
             );
         } else {
             $verified = self::verifyMAC(
-            // @codeCoverageIgnoreStart
+                // @codeCoverageIgnoreStart
                 $auth,
                 $version .
                     $salt .
@@ -478,10 +482,10 @@ final class Crypto
                 $secretKey->getRawKeyMaterial(),
                 $config
             );
-        // @codeCoverageIgnoreStart
+            // @codeCoverageIgnoreStart
         } catch (InvalidMessage) {
             return false;
-        // @codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
         }
     }
 

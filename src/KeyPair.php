@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
 
 use ParagonIE\Halite\Asymmetric\{
@@ -30,7 +32,7 @@ class KeyPair
 
     /**
      * Hide this from var_dump(), etc.
-     * 
+     *
      * @return array
      * @codeCoverageIgnore
      */
@@ -38,7 +40,7 @@ class KeyPair
     {
         return [
             'privateKey' => '**protected**',
-            'publicKey' => '**protected**'
+            'publicKey' => '**protected**',
         ];
     }
 
@@ -49,7 +51,7 @@ class KeyPair
      */
     public function getPublicKey(): \ParagonIE\Halite\Asymmetric\PublicKey
     {
-       return $this->publicKey;
+        return $this->publicKey;
     }
 
     /**
@@ -59,6 +61,6 @@ class KeyPair
      */
     public function getSecretKey(): \ParagonIE\Halite\Asymmetric\SecretKey
     {
-       return $this->secretKey;
+        return $this->secretKey;
     }
 }

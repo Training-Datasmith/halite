@@ -1,9 +1,11 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
+declare(strict_types=1);
+
 use ParagonIE\Halite\Alerts\ConfigDirectiveNotFound;
 use ParagonIE\Halite\Config;
 use ParagonIE\Halite\Symmetric\Config as SymmetricConfig;
+use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {
@@ -11,7 +13,7 @@ class ConfigTest extends TestCase
     {
         /** @var object{abc:12345}&Config $config */
         $config = new Config([
-            'abc' => 12345
+            'abc' => 12345,
         ]);
 
         $this->assertSame(12345, $config->abc);

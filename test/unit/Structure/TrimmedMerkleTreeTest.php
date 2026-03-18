@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ParagonIE\Halite\Structure\{
@@ -10,7 +11,6 @@ use PHPUnit\Framework\TestCase;
 
 final class TrimmedMerkleTreeTest extends TestCase
 {
-
     public function testExpectedBehavior()
     {
         $treeA = new TrimmedMerkleTree(

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Stream;
 
 /**
@@ -11,5 +13,5 @@ namespace ParagonIE\Halite\Stream;
  */
 class WeakReadOnlyFile extends ReadOnlyFile
 {
-    const ALLOWED_MODES = ['rb', 'r+b', 'wb', 'w+b', 'cb', 'c+b'];
+    public const ALLOWED_MODES = ['rb', 'r+b', 'wb', 'w+b', 'cb', 'c+b'];
 }

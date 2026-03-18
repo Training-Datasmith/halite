@@ -1,6 +1,10 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Structure;
+
+use function count;
 
 use ParagonIE\Halite\Alerts\{
     CannotPerformOperation,
@@ -9,7 +13,6 @@ use ParagonIE\Halite\Alerts\{
 use ParagonIE\Halite\Util;
 use SodiumException;
 use TypeError;
-use function count;
 
 /**
  * Class TrimmedMerkleTree
@@ -71,7 +74,7 @@ class TrimmedMerkleTree extends MerkleTree
             for ($i = 0; $i < $size; $i += 2) {
                 if (empty($hash[$i + 1])) {
                     $tmp[$j] = $hash[$i];
-                } elseif(!empty($hash[$i])) {
+                } elseif (!empty($hash[$i])) {
                     $tmp[$j] = Util::raw_hash(
                         self::MERKLE_BRANCH .
                         $this->personalization .
@@ -102,7 +105,7 @@ class TrimmedMerkleTree extends MerkleTree
     {
         $thisTree = $this->nodes;
         foreach ($nodes as $node) {
-            $thisTree []= $node;
+            $thisTree [] = $node;
         }
         $new = new TrimmedMerkleTree(...$thisTree);
         $new->setHashSize($this->outputSize);

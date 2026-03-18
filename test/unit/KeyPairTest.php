@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ParagonIE\ConstantTime\Hex;
@@ -10,8 +11,8 @@ use ParagonIE\Halite\{
 };
 use ParagonIE\Halite\Asymmetric\{
     Crypto as Asymmetric,
-    SignatureSecretKey,
-    SignaturePublicKey
+    SignaturePublicKey,
+    SignatureSecretKey
 };
 use ParagonIE\HiddenString\HiddenString;
 use PHPUnit\Framework\TestCase;
@@ -82,11 +83,11 @@ final class KeyPairTest extends TestCase
         );
         $sign_secret = $keypair->getSecretKey();
         $sign_public = $keypair->getPublicKey();
-        
+
         $this->assertInstanceOf(SignatureSecretKey::class, $sign_secret);
         $this->assertInstanceOf(SignaturePublicKey::class, $sign_public);
-        
-        // Can this be used?        
+
+        // Can this be used?
         $message = 'This is a test message';
         $signed = Asymmetric::sign(
             $message,
@@ -99,7 +100,7 @@ final class KeyPairTest extends TestCase
                 $signed
             )
         );
-        
+
         $this->assertSame(
             $sign_public->getRawKeyMaterial(),
             "\x88\x9c\xc0\x7a\x90\xb8\x98\xf4\x6b\x47\xfe\xcc\x91\x42\x58\x45".
@@ -230,9 +231,9 @@ final class KeyPairTest extends TestCase
         $filename = tempnam(__DIR__.'/tmp/', 'key');
         $key = KeyFactory::generateEncryptionKeyPair();
         KeyFactory::save($key, $filename);
-        
+
         $copy = KeyFactory::loadEncryptionKeyPair($filename);
-        
+
         $this->assertSame(
             $key->getPublicKey()->getRawKeyMaterial(),
             $copy->getPublicKey()->getRawKeyMaterial()
@@ -388,12 +389,12 @@ final class KeyPairTest extends TestCase
         $enc_kp = KeyFactory::generateEncryptionKeyPair();
         $enc_secret = $enc_kp->getSecretKey();
         $enc_public = $enc_kp->getPublicKey();
-        
+
         $this->assertSame(
             $enc_secret->derivePublicKey()->getRawKeyMaterial(),
             $enc_public->getRawKeyMaterial()
         );
-        
+
         $sign_kp = KeyFactory::generateSignatureKeyPair();
         $sign_secret = $sign_kp->getSecretKey();
         $sign_public = $sign_kp->getPublicKey();

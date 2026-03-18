@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ParagonIE\ConstantTime\Binary;
@@ -21,14 +22,14 @@ final class StreamTest extends TestCase
     public function testFileHash()
     {
         $filename = @tempnam('/tmp', 'x');
-        
+
         $buf = random_bytes(65537);
         file_put_contents($filename, $buf);
-        
+
         $fileOne = new ReadOnlyFile($filename);
         $fp = fopen($filename, 'rb');
         $fileTwo = new ReadOnlyFile($fp);
-        
+
         $this->assertSame(
             $fileOne->getHash(),
             $fileTwo->getHash()
@@ -150,12 +151,12 @@ final class StreamTest extends TestCase
     public function testFileRead()
     {
         $filename = @tempnam('/tmp', 'x');
-        
+
         $buf = random_bytes(65537);
         file_put_contents($filename, $buf);
 
         $fStream = new ReadOnlyFile($filename);
-        
+
         $this->assertSame(
             $fStream->readBytes(65537),
             $buf
@@ -172,12 +173,12 @@ final class StreamTest extends TestCase
             $this->fail('Allowed to read more bytes than the file contains');
         } catch (CryptoException\CannotPerformOperation $ex) {
         }
-        
+
         file_put_contents(
             $filename,
             Binary::safeSubstr($buf, 0, 32768) . 'x' . Binary::safeSubstr($buf, 32768)
         );
-        
+
         try {
             $fStream->readBytes(65537);
             $this->fail('File was mutated after being read');
@@ -210,7 +211,6 @@ final class StreamTest extends TestCase
             $this->assertSame(bin2hex($buffer), bin2hex($mStream->readBytes($size)));
         }
     }
-
 
     public function testMutableFileResource()
     {

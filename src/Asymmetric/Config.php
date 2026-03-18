@@ -1,14 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Asymmetric;
 
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\InvalidMessage;
 use ParagonIE\Halite\{
     Config as BaseConfig,
     Halite,
     Util
 };
+use ParagonIE\Halite\Alerts\InvalidMessage;
 
 /**
  * Class Config

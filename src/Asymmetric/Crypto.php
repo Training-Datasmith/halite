@@ -1,8 +1,21 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Asymmetric;
 
+use Error;
+
+use function is_string;
+
 use ParagonIE\ConstantTime\Binary;
+use ParagonIE\Halite\{
+    Halite,
+    Key,
+    Symmetric\Crypto as SymmetricCrypto,
+    Symmetric\EncryptionKey,
+    Util
+};
 use ParagonIE\Halite\Alerts\{
     CannotPerformOperation,
     InvalidDigestLength,
@@ -11,30 +24,24 @@ use ParagonIE\Halite\Alerts\{
     InvalidSignature,
     InvalidType
 };
-use ParagonIE\Halite\{
-    Halite,
-    Key,
-    Symmetric\Crypto as SymmetricCrypto,
-    Symmetric\EncryptionKey,
-    Util
-};
 use ParagonIE\HiddenString\HiddenString;
-use Error;
 use RangeException;
+
+use function sodium_crypto_box_keypair_from_secretkey_and_publickey;
+use function sodium_crypto_box_publickey_from_secretkey;
+use function sodium_crypto_box_seal;
+use function sodium_crypto_box_seal_open;
+use function sodium_crypto_scalarmult;
+
+use const SODIUM_CRYPTO_SIGN_BYTES;
+
+use function sodium_crypto_sign_detached;
+use function sodium_crypto_sign_verify_detached;
+
+use const SODIUM_CRYPTO_STREAM_KEYBYTES;
+
 use SodiumException;
 use TypeError;
-use const
-    SODIUM_CRYPTO_STREAM_KEYBYTES,
-    SODIUM_CRYPTO_SIGN_BYTES;
-use function
-    is_string,
-    sodium_crypto_box_keypair_from_secretkey_and_publickey,
-    sodium_crypto_box_publickey_from_secretkey,
-    sodium_crypto_box_seal,
-    sodium_crypto_box_seal_open,
-    sodium_crypto_scalarmult,
-    sodium_crypto_sign_detached,
-    sodium_crypto_sign_verify_detached;
 
 /**
  * Class Crypto
@@ -414,11 +421,11 @@ final class Crypto
             $secret_key,
             $public_key
         );
-        
+
         // Wipe these immediately:
         Util::memzero($secret_key);
         Util::memzero($public_key);
-        
+
         // Now let's open that sealed box
         $message = sodium_crypto_box_seal_open(
             $ciphertext,
@@ -472,7 +479,7 @@ final class Crypto
             );
             // @codeCoverageIgnoreEnd
         }
-        
+
         return sodium_crypto_sign_verify_detached(
             $signature,
             $message,

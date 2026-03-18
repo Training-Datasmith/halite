@@ -1,11 +1,15 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Asymmetric;
 
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\Halite\Alerts\InvalidKey;
 use ParagonIE\HiddenString\HiddenString;
+
 use const SODIUM_CRYPTO_BOX_PUBLICKEYBYTES;
+
 use function sprintf;
 
 /**

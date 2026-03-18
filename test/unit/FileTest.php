@@ -1,6 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
+use ParagonIE\Halite\Alerts as CryptoException;
 use ParagonIE\Halite\File;
 use ParagonIE\Halite\KeyFactory;
 use ParagonIE\Halite\Stream\{
@@ -10,13 +12,11 @@ use ParagonIE\Halite\Stream\{
 };
 use ParagonIE\Halite\Symmetric\EncryptionKey;
 use ParagonIE\Halite\Util;
-use ParagonIE\Halite\Alerts as CryptoException;
 use ParagonIE\HiddenString\HiddenString;
 use PHPUnit\Framework\TestCase;
 
 final class FileTest extends TestCase
 {
-
     public function setUp(): void
     {
         chmod(__DIR__.'/tmp/', 0777);
@@ -163,7 +163,7 @@ final class FileTest extends TestCase
         $key = new EncryptionKey(
             new HiddenString(\str_repeat('B', 32))
         );
-        $aad = "Additional associated data";
+        $aad = 'Additional associated data';
 
         File::encrypt(
             __DIR__.'/tmp/paragon_avatar.png',
@@ -260,7 +260,7 @@ final class FileTest extends TestCase
         chmod(__DIR__.'/tmp/paragon_avatar.encrypt_fail.png', 0777);
         touch(__DIR__.'/tmp/paragon_avatar.decrypt_fail.png');
         chmod(__DIR__.'/tmp/paragon_avatar.decrypt_fail.png', 0777);
-        
+
         $key = new EncryptionKey(
             new HiddenString(\str_repeat('B', 32))
         );
@@ -269,11 +269,11 @@ final class FileTest extends TestCase
             __DIR__.'/tmp/paragon_avatar.encrypt_fail.png',
             $key
         );
-        
+
         $fp = fopen(__DIR__.'/tmp/paragon_avatar.encrypt_fail.png', 'ab');
         fwrite($fp, random_bytes(1));
         fclose($fp);
-            
+
         try {
             File::decrypt(
                 __DIR__.'/tmp/paragon_avatar.encrypt_fail.png',
@@ -322,7 +322,7 @@ final class FileTest extends TestCase
                 __DIR__ . '/tmp/empty.decrypted.txt',
                 $key
             );
-            $this->fail("This should scream bloody murder");
+            $this->fail('This should scream bloody murder');
         } catch (CryptoException\InvalidMessage $e) {
             $this->assertSame($msg, $e->getMessage());
         }
@@ -337,11 +337,10 @@ final class FileTest extends TestCase
                 __DIR__ . '/tmp/empty.decrypted.txt',
                 $key
             );
-            $this->fail("This should scream bloody murder");
+            $this->fail('This should scream bloody murder');
         } catch (CryptoException\InvalidMessage $e) {
             $this->assertSame($msg, $e->getMessage());
         }
-
 
         file_put_contents(
             __DIR__.'/tmp/empty.encrypted.txt',
@@ -353,7 +352,7 @@ final class FileTest extends TestCase
                 __DIR__ . '/tmp/empty.decrypted.txt',
                 $key
             );
-            $this->fail("This should scream bloody murder");
+            $this->fail('This should scream bloody murder');
         } catch (CryptoException\InvalidMessage $e) {
             $this->assertSame($msg, $e->getMessage());
         }
@@ -459,7 +458,7 @@ final class FileTest extends TestCase
         );
 
         // New: Additional Associated Data tests
-        $aad = "Additional associated data";
+        $aad = 'Additional associated data';
         File::seal(
             __DIR__.'/tmp/paragon_avatar.png',
             __DIR__.'/tmp/paragon_avatar.sealed-aad.png',
@@ -523,7 +522,7 @@ final class FileTest extends TestCase
 
         $file = new ReadOnlyFile(fopen('haliteTest://paragon_avatar.png', 'rb'));
         File::seal(
-          $file,
+            $file,
             __DIR__.'/tmp/paragon_avatar.sealed.png',
             $publickey
         );
@@ -565,8 +564,8 @@ final class FileTest extends TestCase
         chmod(__DIR__.'/tmp/empty.unsealed.txt', 0777);
 
         $keypair = KeyFactory::generateEncryptionKeyPair();
-            $secretkey = $keypair->getSecretKey();
-            $publickey = $keypair->getPublicKey();
+        $secretkey = $keypair->getSecretKey();
+        $publickey = $keypair->getPublicKey();
 
         File::seal(
             __DIR__.'/tmp/empty.txt',
@@ -607,21 +606,21 @@ final class FileTest extends TestCase
         chmod(__DIR__.'/tmp/paragon_avatar.seal_fail.png', 0777);
         touch(__DIR__.'/tmp/paragon_avatar.open_fail.png');
         chmod(__DIR__.'/tmp/paragon_avatar.open_fail.png', 0777);
-        
+
         $keypair = KeyFactory::generateEncryptionKeyPair();
-            $secretkey = $keypair->getSecretKey();
-            $publickey = $keypair->getPublicKey();
-        
+        $secretkey = $keypair->getSecretKey();
+        $publickey = $keypair->getPublicKey();
+
         File::seal(
             __DIR__.'/tmp/paragon_avatar.png',
             __DIR__.'/tmp/paragon_avatar.seal_fail.png',
             $publickey
         );
-        
+
         $fp = fopen(__DIR__.'/tmp/paragon_avatar.seal_fail.png', 'ab');
         fwrite($fp, random_bytes(1));
         fclose($fp);
-        
+
         try {
             File::unseal(
                 __DIR__.'/tmp/paragon_avatar.seal_fail.png',
@@ -667,7 +666,7 @@ final class FileTest extends TestCase
                 __DIR__.'/tmp/empty.unsealed.txt',
                 $secretkey
             );
-            $this->fail("This should scream bloody murder");
+            $this->fail('This should scream bloody murder');
         } catch (CryptoException\InvalidMessage $e) {
             $this->assertSame($msg, $e->getMessage());
         }
@@ -682,7 +681,7 @@ final class FileTest extends TestCase
                 __DIR__.'/tmp/empty.unsealed.txt',
                 $secretkey
             );
-            $this->fail("This should scream bloody murder");
+            $this->fail('This should scream bloody murder');
         } catch (CryptoException\InvalidMessage $e) {
             $this->assertSame($msg, $e->getMessage());
         }
@@ -842,13 +841,13 @@ final class FileTest extends TestCase
         $csum = File::checksum(__DIR__.'/tmp/paragon_avatar.png', null, false);
         $this->assertSame(
             $csum,
-            "09f9f74a0e742d057ca08394db4c2e444be88c0c94fe9a914c3d3758c7eccafb".
-            "8dd286e3d6bc37f353e76c0c5aa2036d978ca28ffaccfa59f5dc1f076c5517a0"
+            '09f9f74a0e742d057ca08394db4c2e444be88c0c94fe9a914c3d3758c7eccafb'.
+            '8dd286e3d6bc37f353e76c0c5aa2036d978ca28ffaccfa59f5dc1f076c5517a0'
         );
-        
+
         $data = random_bytes(32);
         file_put_contents(__DIR__.'/tmp/garbage.dat', $data);
-        
+
         $hash = Util::raw_hash($data, 64);
         $file = File::checksum(__DIR__.'/tmp/garbage.dat', null, true);
         $this->assertSame(

@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 use ParagonIE\Halite\Alerts\CannotPerformOperation;
 use ParagonIE\Halite\Alerts\InvalidDigestLength;
-use ParagonIE\Halite\Util;
 use ParagonIE\Halite\Alerts\InvalidType;
+use ParagonIE\Halite\Util;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,10 +24,10 @@ final class UtilTest extends TestCase
      */
     public function testChrToInt()
     {
-        $this->assertSame(0x61, Util::chrToInt("a"));
+        $this->assertSame(0x61, Util::chrToInt('a'));
         $this->assertSame(0xe0, Util::chrToInt("\xe0"));
         try {
-            Util::chrToInt("ab");
+            Util::chrToInt('ab');
         } catch (\RangeException $ex) {
         }
         $random = random_int(0, 255);
@@ -36,7 +37,7 @@ final class UtilTest extends TestCase
         );
 
         $this->expectException(\RangeException::class);
-        Util::chrToInt("ab");
+        Util::chrToInt('ab');
     }
 
     public function testIntArrayToString()
@@ -127,7 +128,7 @@ final class UtilTest extends TestCase
         $len = 32;
         $info = 'TESTING HKDF-BLAKE2B';
         $salt = str_repeat("\x80", 32);
-        
+
         $test = Util::hkdfBlake2b($ikm, $len, $info, $salt);
         $this->assertSame(
             $test,
@@ -138,12 +139,12 @@ final class UtilTest extends TestCase
         $ikmB = 'YELLOW SUBMARINF';
         $testIkm = Util::hkdfBlake2b($ikmB, $len, $info, $salt);
         $this->assertNotEquals($test, $testIkm);
-        
+
         // Let's change the info
         $infoB = 'TESTING HKDF-BLAKE2C';
         $testInfo = Util::hkdfBlake2b($ikm, $len, $infoB, $salt);
         $this->assertNotEquals($test, $testInfo);
-        
+
         // Let's change the salt
         $saltB = str_repeat("\x80", 31) . "\x81";
         $testSalt = Util::hkdfBlake2b($ikm, $len, $info, $saltB);

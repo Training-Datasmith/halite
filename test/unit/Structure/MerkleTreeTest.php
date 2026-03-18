@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use ParagonIE\Halite\Structure\{
@@ -56,7 +57,7 @@ final class MerkleTreeTest extends TestCase
             $treeA->getRoot(true),
             $treeB->getRoot(true)
         );
-        
+
         $treeC = $treeA->getExpandedTree(
             new Node('e'),
             new Node('e'),

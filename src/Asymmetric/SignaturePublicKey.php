@@ -1,16 +1,22 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Asymmetric;
 
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\Halite\Alerts\InvalidKey;
 use ParagonIE\HiddenString\HiddenString;
-use SodiumException;
-use TypeError;
+
+use function sodium_crypto_sign_ed25519_pk_to_curve25519;
+
 use const SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES;
-use function
-    sodium_crypto_sign_ed25519_pk_to_curve25519,
-    sprintf;
+
+use SodiumException;
+
+use function sprintf;
+
+use TypeError;
 
 /**
  * Class SignaturePublicKey

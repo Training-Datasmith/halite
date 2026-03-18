@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 if (\extension_loaded('sodium')) {
@@ -231,7 +232,8 @@ if (!\extension_loaded('sodium')) {
      *
      * @return string
      */
-    function sodium_crypto_box_keypair(): string {
+    function sodium_crypto_box_keypair(): string
+    {
         if (\extension_loaded('libsodium')) {
             return \Sodium\crypto_box_keypair();
         }
@@ -404,7 +406,7 @@ if (!\extension_loaded('sodium')) {
         string $input,
         string $key = '',
         int $length = 32
-    ): string{
+    ): string {
         if (\extension_loaded('libsodium')) {
             return \Sodium\crypto_generichash($input, $key, $length);
         }
@@ -730,7 +732,6 @@ if (!\extension_loaded('sodium')) {
         return '';
     }
 
-
     /**
      * Generate an Ed25519 keypair for use with the crypto_sign API
      *
@@ -743,7 +744,6 @@ if (!\extension_loaded('sodium')) {
         }
         return '';
     }
-
 
     /**
      * Create an Ed25519 keypair from an Ed25519 secret key + Ed25519 public key
@@ -1017,7 +1017,8 @@ if (!\extension_loaded('sodium')) {
      * Get the true major version of libsodium
      * @return int
      */
-    function sodium_library_version_major(): int {
+    function sodium_library_version_major(): int
+    {
         if (\extension_loaded('libsodium')) {
             return \SODIUM_LIBRARY_MAJOR_VERSION;
         }
@@ -1028,7 +1029,8 @@ if (!\extension_loaded('sodium')) {
      * Get the true minor version of libsodium
      * @return int
      */
-    function sodium_library_version_minor(): int {
+    function sodium_library_version_minor(): int
+    {
         if (\extension_loaded('libsodium')) {
             return \SODIUM_LIBRARY_MINOR_VERSION;
         }
@@ -1071,7 +1073,8 @@ if (!\extension_loaded('sodium')) {
      *
      * @return string
      */
-    function sodium_version_string(): string {
+    function sodium_version_string(): string
+    {
         if (\extension_loaded('libsodium')) {
             return \Sodium\version_string();
         }

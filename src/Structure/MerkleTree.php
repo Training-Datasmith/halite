@@ -1,6 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Structure;
+
+use function array_shift;
+use function count;
 
 use ParagonIE\ConstantTime\Hex;
 use ParagonIE\Halite\Alerts\{
@@ -8,15 +13,16 @@ use ParagonIE\Halite\Alerts\{
     InvalidDigestLength
 };
 use ParagonIE\Halite\Util;
+
+use const SODIUM_CRYPTO_GENERICHASH_BYTES;
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MIN;
+
 use SodiumException;
+
+use function sprintf;
+
 use TypeError;
-use const SODIUM_CRYPTO_GENERICHASH_BYTES,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MIN;
-use function
-    array_shift,
-    count,
-    sprintf;
 
 /**
  * Class MerkleTree
@@ -37,8 +43,8 @@ use function
  */
 class MerkleTree
 {
-    const MERKLE_LEAF =   "\x01";
-    const MERKLE_BRANCH = "\x00";
+    public const MERKLE_LEAF =   "\x01";
+    public const MERKLE_BRANCH = "\x00";
 
     protected bool $rootCalculated = false;
     protected string $root = '';
@@ -49,7 +55,7 @@ class MerkleTree
     protected array $nodes = [];
     protected string $personalization = '';
     protected int $outputSize = SODIUM_CRYPTO_GENERICHASH_BYTES;
-    
+
     /**
      * Instantiate a Merkle tree
      */
@@ -77,7 +83,7 @@ class MerkleTree
             ? $this->root
             : Hex::encode($this->root);
     }
-    
+
     /**
      * Merkle Trees are immutable. Return a replacement with extra nodes.
      *
@@ -89,7 +95,7 @@ class MerkleTree
     {
         $thisTree = $this->nodes;
         foreach ($nodes as $node) {
-            $thisTree []= $node;
+            $thisTree [] = $node;
         }
         return (new MerkleTree(...$thisTree))
             ->setHashSize($this->outputSize)
@@ -242,7 +248,7 @@ class MerkleTree
     public static function getSizeRoundedUp(int $inputSize): int
     {
         $order = 1;
-        while($order < $inputSize) {
+        while ($order < $inputSize) {
             $order <<= 1;
         }
         return $order;

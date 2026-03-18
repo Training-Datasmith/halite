@@ -1,16 +1,22 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Asymmetric;
 
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\Halite\Alerts\InvalidKey;
 use ParagonIE\HiddenString\HiddenString;
-use SodiumException;
-use TypeError;
+
+use function sodium_crypto_box_publickey_from_secretkey;
+
 use const SODIUM_CRYPTO_BOX_SECRETKEYBYTES;
-use function
-    sodium_crypto_box_publickey_from_secretkey,
-    sprintf;
+
+use SodiumException;
+
+use function sprintf;
+
+use TypeError;
 
 /**
  * Class EncryptionSecretKey

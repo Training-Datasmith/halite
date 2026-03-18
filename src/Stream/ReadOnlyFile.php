@@ -1,9 +1,22 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Stream;
 
+use function clearstatcache;
+use function fclose;
+use function fopen;
+use function fread;
+use function fseek;
+use function fstat;
+use function ftell;
+use function in_array;
+use function is_readable;
+use function is_resource;
+use function is_string;
+
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Contract\StreamInterface;
 use ParagonIE\Halite\Alerts\{
     CannotPerformOperation,
     FileAccessDenied,
@@ -11,28 +24,21 @@ use ParagonIE\Halite\Alerts\{
     FileModified,
     InvalidType,
 };
+use ParagonIE\Halite\Contract\StreamInterface;
 use ParagonIE\Halite\Key;
+
+use const SEEK_SET;
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
+
+use function sodium_crypto_generichash_final;
+use function sodium_crypto_generichash_init;
+use function sodium_crypto_generichash_update;
+
 use SodiumException;
+
+use function stream_get_meta_data;
+
 use TypeError;
-use const
-    SEEK_SET,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
-use function
-    clearstatcache,
-    fclose,
-    fopen,
-    fread,
-    fseek,
-    fstat,
-    ftell,
-    in_array,
-    is_readable,
-    is_resource,
-    is_string,
-    sodium_crypto_generichash_init,
-    sodium_crypto_generichash_update,
-    sodium_crypto_generichash_final,
-    stream_get_meta_data;
 
 /**
  * Class ReadOnlyFile
@@ -50,8 +56,8 @@ use function
  */
 class ReadOnlyFile implements StreamInterface
 {
-    const ALLOWED_MODES = ['rb'];
-    const CHUNK = 8192; // PHP's fread() buffer is set to 8192 by default
+    public const ALLOWED_MODES = ['rb'];
+    public const CHUNK = 8192; // PHP's fread() buffer is set to 8192 by default
 
     private bool $closeAfter = false;
 
@@ -339,20 +345,21 @@ class ReadOnlyFile implements StreamInterface
     /**
      * Wraps fstat to allow calculation of file-size on stream wrappers.
      */
-    private function fstat() : array {
-      $stat = fstat($this->fp);
-      if ($stat) {
+    private function fstat(): array
+    {
+        $stat = fstat($this->fp);
+        if ($stat) {
+            return $stat;
+        }
+        // The resource is remote or a stream wrapper like php://input
+        $stat = [
+          'size' => 0,
+        ];
+        fseek($this->fp, 0);
+        while (!feof($this->fp)) {
+            $stat['size'] += Binary::safeStrlen(fread($this->fp, self::CHUNK));
+        }
+        fseek($this->fp, $this->pos);
         return $stat;
-      }
-      // The resource is remote or a stream wrapper like php://input
-      $stat = [
-        'size' => 0,
-      ];
-      fseek($this->fp, 0);
-      while (!feof($this->fp)) {
-        $stat['size'] += Binary::safeStrlen(fread($this->fp, self::CHUNK));
-      }
-      fseek($this->fp, $this->pos);
-      return $stat;
     }
 }

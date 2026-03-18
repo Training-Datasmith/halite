@@ -1,8 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
-use ParagonIE\HiddenString\HiddenString as Outsourced;
 use ParagonIE\Halite\HiddenString;
+use ParagonIE\HiddenString\HiddenString as Outsourced;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -1,6 +1,10 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
+
+use function hash_equals;
 
 use ParagonIE\ConstantTime\{
     Base64UrlSafe,
@@ -20,13 +24,14 @@ use ParagonIE\Halite\Symmetric\{
     EncryptionKey
 };
 use ParagonIE\HiddenString\HiddenString;
+
+use function sodium_crypto_pwhash_str;
+use function sodium_crypto_pwhash_str_verify;
+
+use const SODIUM_CRYPTO_PWHASH_STRPREFIX;
+
 use SodiumException;
 use TypeError;
-use const SODIUM_CRYPTO_PWHASH_STRPREFIX;
-use function
-    hash_equals,
-    sodium_crypto_pwhash_str,
-    sodium_crypto_pwhash_str_verify;
 
 /**
  * Class Password
@@ -79,7 +84,7 @@ final class Password
             $kdfLimits[0],
             $kdfLimits[1]
         );
-        
+
         // Now let's encrypt the result
         return Crypto::encryptWithAd(
             new HiddenString($hashed),
@@ -218,7 +223,7 @@ final class Password
     ): bool {
         $config = self::getConfig($stored);
         // Base64-urlsafe encoded, so 4/3 the size of raw binary
-        if (Binary::safeStrlen($stored) < ((int) $config->SHORTEST_CIPHERTEXT_LENGTH * 4/3)) {
+        if (Binary::safeStrlen($stored) < ((int) $config->SHORTEST_CIPHERTEXT_LENGTH * 4 / 3)) {
             throw new InvalidMessage(
                 'Encrypted password hash is too short.'
             );

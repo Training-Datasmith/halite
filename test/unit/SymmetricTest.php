@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Symmetric\Crypto as Symmetric;
-use ParagonIE\Halite\Symmetric\AuthenticationKey;
-use ParagonIE\Halite\Symmetric\EncryptionKey;
 use ParagonIE\Halite\Alerts as CryptoException;
 use ParagonIE\Halite\Halite;
+use ParagonIE\Halite\Symmetric\AuthenticationKey;
 use ParagonIE\Halite\Symmetric\Config;
+use ParagonIE\Halite\Symmetric\Crypto as Symmetric;
+use ParagonIE\Halite\Symmetric\EncryptionKey;
 use ParagonIE\HiddenString\HiddenString;
 use PHPUnit\Framework\TestCase;
 
@@ -43,21 +44,21 @@ final class SymmetricTest extends TestCase
         $key = new AuthenticationKey(new HiddenString(str_repeat('A', 32), true));
         $message = 'test message';
         $mac = Symmetric::authenticate($message, $key, true);
-        
+
         // Test invalid message
         $this->assertFalse(
             Symmetric::verify('othermessage', $key, $mac, true)
         );
-        
+
         $r = random_int(0, mb_strlen($mac, '8bit') - 1);
-        
+
         $_mac = $mac;
         $_mac[$r] = chr(
             ord($_mac[$r])
                 ^
             1 << random_int(0, 7)
         );
-        
+
         // Test invalid signature
         $this->assertFalse(
             Symmetric::verify(
@@ -192,7 +193,7 @@ final class SymmetricTest extends TestCase
         $key = new EncryptionKey(new HiddenString(str_repeat('A', 32)));
         $message = Symmetric::encrypt(new HiddenString('test message'), $key, true);
         $this->assertTrue(strpos($message, Halite::HALITE_VERSION) === 0);
-        
+
         $plain = Symmetric::decrypt($message, $key, true);
         $this->assertSame($plain->getString(), 'test message');
     }
@@ -245,7 +246,7 @@ final class SymmetricTest extends TestCase
     public function testUnpack()
     {
         $key = new EncryptionKey(new HiddenString(str_repeat('A', 32)));
-        
+
         // Randomly sized plaintext
         $size = random_int(1, 1024);
         $plaintext = random_bytes($size);
@@ -254,10 +255,10 @@ final class SymmetricTest extends TestCase
             $key,
             true
         );
-        
+
         // Let's unpack our message
         $unpacked = Symmetric::unpackMessageForDecryption($message);
-        
+
         // Now to test our expected results!
         $this->assertSame(Binary::safeStrlen($unpacked[0]), Halite::VERSION_TAG_LEN);
         $this->assertTrue($unpacked[1] instanceof Config);

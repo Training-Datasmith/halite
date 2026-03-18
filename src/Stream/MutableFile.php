@@ -1,34 +1,38 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Stream;
 
+use function clearstatcache;
+use function fclose;
+use function file_exists;
+use function fopen;
+use function fread;
+use function fseek;
+use function fstat;
+use function ftell;
+use function fwrite;
+use function in_array;
+use function is_int;
+use function is_readable;
+use function is_resource;
+use function is_string;
+use function is_writable;
+use function min;
+
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Contract\StreamInterface;
 use ParagonIE\Halite\Alerts\{
     CannotPerformOperation,
     FileAccessDenied,
     InvalidType
 };
+use ParagonIE\Halite\Contract\StreamInterface;
+
+use function stream_get_meta_data;
+use function touch;
+
 use TypeError;
-use function
-    clearstatcache,
-    file_exists,
-    fclose,
-    fopen,
-    fread,
-    fseek,
-    fstat,
-    ftell,
-    fwrite,
-    in_array,
-    is_int,
-    is_readable,
-    is_resource,
-    is_string,
-    is_writable,
-    min,
-    stream_get_meta_data,
-    touch;
 
 /**
  * Class MutableFile
@@ -48,8 +52,8 @@ use function
  */
 class MutableFile implements StreamInterface
 {
-    const ALLOWED_MODES = ['r+b', 'w+b', 'cb', 'c+b', 'wb'];
-    const CHUNK = 8192; // PHP's fread() buffer is set to 8192 by default
+    public const ALLOWED_MODES = ['r+b', 'w+b', 'cb', 'c+b', 'wb'];
+    public const CHUNK = 8192; // PHP's fread() buffer is set to 8192 by default
     private bool $closeAfter = false;
 
     /**
@@ -228,7 +232,7 @@ class MutableFile implements StreamInterface
             (int) $stat['size'] - $pos
         );
     }
-    
+
     /**
      * Set the current cursor position to the desired location
      *

@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 use ParagonIE\Halite\Alerts as CryptoException;
 use ParagonIE\Halite\Alerts\InvalidType;
-use ParagonIE\Halite\KeyFactory;
 use ParagonIE\Halite\Asymmetric\Crypto as Asymmetric;
 use ParagonIE\Halite\Asymmetric\EncryptionPublicKey;
 use ParagonIE\Halite\Asymmetric\SignaturePublicKey;
 use ParagonIE\Halite\Asymmetric\SignatureSecretKey;
+use ParagonIE\Halite\KeyFactory;
 use ParagonIE\HiddenString\HiddenString;
 use PHPUnit\Framework\TestCase;
 
@@ -162,7 +163,7 @@ class KeyTest extends TestCase
         $this->assertInstanceOf(SignatureSecretKey::class, $sign_secret);
         $this->assertInstanceOf(SignaturePublicKey::class, $sign_public);
 
-        // Can this be used?        
+        // Can this be used?
         $message = 'This is a test message';
         $signed = Asymmetric::sign(
             $message,
@@ -280,48 +281,48 @@ class KeyTest extends TestCase
             $this->markTestSkipped('Libsodium not installed');
         }
         $key = KeyFactory::generateAuthenticationKey();
-            $this->assertFalse($key->isAsymmetricKey());
-            $this->assertFalse($key->isEncryptionKey());
-            $this->assertTrue($key->isSecretKey());
-            $this->assertTrue($key->isSigningKey());
-            $this->assertFalse($key->isPublicKey());
-        
+        $this->assertFalse($key->isAsymmetricKey());
+        $this->assertFalse($key->isEncryptionKey());
+        $this->assertTrue($key->isSecretKey());
+        $this->assertTrue($key->isSigningKey());
+        $this->assertFalse($key->isPublicKey());
+
         $key = KeyFactory::generateEncryptionKey();
-            $this->assertFalse($key->isAsymmetricKey());
-            $this->assertTrue($key->isEncryptionKey());
-            $this->assertTrue($key->isSecretKey());
-            $this->assertFalse($key->isSigningKey());
-            $this->assertFalse($key->isPublicKey());
-        
+        $this->assertFalse($key->isAsymmetricKey());
+        $this->assertTrue($key->isEncryptionKey());
+        $this->assertTrue($key->isSecretKey());
+        $this->assertFalse($key->isSigningKey());
+        $this->assertFalse($key->isPublicKey());
+
         $keypair = KeyFactory::generateEncryptionKeyPair();
-            $enc_secret = $keypair->getSecretKey();
-            $enc_public = $keypair->getPublicKey();
-            $this->assertTrue($enc_secret->isAsymmetricKey());
-            $this->assertTrue($enc_secret->isEncryptionKey());
-            $this->assertTrue($enc_secret->isSecretKey());
-            $this->assertFalse($enc_secret->isSigningKey());
-            $this->assertFalse($enc_secret->isPublicKey());
-            
-            $this->assertTrue($enc_public->isAsymmetricKey());
-            $this->assertTrue($enc_public->isEncryptionKey());
-            $this->assertFalse($enc_public->isSecretKey());
-            $this->assertFalse($enc_public->isSigningKey());
-            $this->assertTrue($enc_public->isPublicKey());
-            
+        $enc_secret = $keypair->getSecretKey();
+        $enc_public = $keypair->getPublicKey();
+        $this->assertTrue($enc_secret->isAsymmetricKey());
+        $this->assertTrue($enc_secret->isEncryptionKey());
+        $this->assertTrue($enc_secret->isSecretKey());
+        $this->assertFalse($enc_secret->isSigningKey());
+        $this->assertFalse($enc_secret->isPublicKey());
+
+        $this->assertTrue($enc_public->isAsymmetricKey());
+        $this->assertTrue($enc_public->isEncryptionKey());
+        $this->assertFalse($enc_public->isSecretKey());
+        $this->assertFalse($enc_public->isSigningKey());
+        $this->assertTrue($enc_public->isPublicKey());
+
         $keypair = KeyFactory::generateSignatureKeyPair();
-            $sign_secret = $keypair->getSecretKey();
-            $sign_public = $keypair->getPublicKey();
-            $this->assertTrue($sign_secret->isAsymmetricKey());
-            $this->assertFalse($sign_secret->isEncryptionKey());
-            $this->assertTrue($sign_secret->isSecretKey());
-            $this->assertTrue($sign_public->isSigningKey());
-            $this->assertFalse($sign_secret->isPublicKey());
-            
-            $this->assertTrue($sign_public->isAsymmetricKey());
-            $this->assertFalse($sign_public->isEncryptionKey());
-            $this->assertFalse($sign_public->isSecretKey());
-            $this->assertTrue($sign_public->isSigningKey());
-            $this->assertTrue($sign_public->isPublicKey());
+        $sign_secret = $keypair->getSecretKey();
+        $sign_public = $keypair->getPublicKey();
+        $this->assertTrue($sign_secret->isAsymmetricKey());
+        $this->assertFalse($sign_secret->isEncryptionKey());
+        $this->assertTrue($sign_secret->isSecretKey());
+        $this->assertTrue($sign_public->isSigningKey());
+        $this->assertFalse($sign_secret->isPublicKey());
+
+        $this->assertTrue($sign_public->isAsymmetricKey());
+        $this->assertFalse($sign_public->isEncryptionKey());
+        $this->assertFalse($sign_public->isSecretKey());
+        $this->assertTrue($sign_public->isSigningKey());
+        $this->assertTrue($sign_public->isPublicKey());
     }
 
     /**
@@ -342,17 +343,17 @@ class KeyTest extends TestCase
         );
         $enc_secret = $enc_keypair->getSecretKey();
         $enc_public = $enc_keypair->getPublicKey();
-        
+
         $file_secret = \tempnam(__DIR__.'/tmp', 'key');
         $file_public = \tempnam(__DIR__.'/tmp', 'key');
-        
+
         $this->assertTrue(
             KeyFactory::save($enc_secret, $file_secret) !== false
         );
         $this->assertTrue(
             KeyFactory::save($enc_public, $file_public) !== false
         );
-        
+
         $load_public = KeyFactory::loadEncryptionPublicKey($file_public);
         $this->assertInstanceOf(EncryptionPublicKey::class, $load_public);
         $this->assertTrue(
@@ -366,7 +367,7 @@ class KeyTest extends TestCase
             $enc_secret->getRawKeyMaterial(),
             $imported->getRawKeyMaterial()
         );
-        
+
         \unlink($file_secret);
         \unlink($file_public);
     }
@@ -389,17 +390,17 @@ class KeyTest extends TestCase
         );
         $sign_secret = $sign_keypair->getSecretKey();
         $sign_public = $sign_keypair->getPublicKey();
-        
+
         $file_secret = \tempnam(__DIR__.'/tmp', 'key');
         $file_public = \tempnam(__DIR__.'/tmp', 'key');
-        
+
         $this->assertTrue(
             KeyFactory::save($sign_secret, $file_secret) !== false
         );
         $this->assertTrue(
             KeyFactory::save($sign_public, $file_public) !== false
         );
-        
+
         $load_public = KeyFactory::loadSignaturePublicKey($file_public);
         $this->assertInstanceOf(SignaturePublicKey::class, $load_public);
         $this->assertTrue(
@@ -413,7 +414,7 @@ class KeyTest extends TestCase
             $sign_secret->getRawKeyMaterial(),
             $imported->getRawKeyMaterial()
         );
-        
+
         \unlink($file_secret);
         \unlink($file_public);
     }
@@ -505,7 +506,6 @@ class KeyTest extends TestCase
         $this->assertSame(
             'd2d76bb8f27dadcc2820515dee41e2e3946f489e5e0635c987815c06c3baee95',
             sodium_bin2hex($key->getRawKeyMaterial())
-
         );
     }
 

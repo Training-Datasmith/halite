@@ -1,18 +1,20 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Symmetric;
 
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\InvalidMessage;
 use ParagonIE\Halite\{
     Config as BaseConfig,
     Halite,
     Util
 };
-use const
-    SODIUM_CRYPTO_BOX_PUBLICKEYBYTES,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
-    SODIUM_CRYPTO_STREAM_NONCEBYTES;
+use ParagonIE\Halite\Alerts\InvalidMessage;
+
+use const SODIUM_CRYPTO_BOX_PUBLICKEYBYTES;
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
+use const SODIUM_CRYPTO_STREAM_NONCEBYTES;
 
 /**
  * Class Config
@@ -67,7 +69,7 @@ final class Config extends BaseConfig
             'Invalid configuration mode: '.$mode
         );
     }
-    
+
     /**
      * Get the configuration for encrypt operations
      *
@@ -91,7 +93,7 @@ final class Config extends BaseConfig
                         'MAC_SIZE' => SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
                         'HKDF_USE_INFO' => true,
                         'HKDF_SBOX' => 'Halite|EncryptionKey',
-                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
+                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite',
                     ];
             }
         }
@@ -109,7 +111,7 @@ final class Config extends BaseConfig
                         'MAC_SIZE' => SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
                         'HKDF_USE_INFO' => false,
                         'HKDF_SBOX' => 'Halite|EncryptionKey',
-                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
+                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite',
                     ];
             }
         }
@@ -117,7 +119,7 @@ final class Config extends BaseConfig
             'Invalid version tag'
         );
     }
-    
+
     /**
      * Get the configuration for seal operations
      *
@@ -138,7 +140,7 @@ final class Config extends BaseConfig
                         'PUBLICKEY_BYTES' => SODIUM_CRYPTO_BOX_PUBLICKEYBYTES,
                         'HKDF_USE_INFO' => $major > 4,
                         'HKDF_SBOX' => 'Halite|EncryptionKey',
-                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
+                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite',
                     ];
             }
         }

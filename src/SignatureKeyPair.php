@@ -1,6 +1,10 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
+
+use function count;
 
 use InvalidArgumentException;
 use ParagonIE\Halite\Alerts\{
@@ -16,7 +20,6 @@ use ParagonIE\Halite\Asymmetric\{
 use ParagonIE\HiddenString\HiddenString;
 use SodiumException;
 use TypeError;
-use function count;
 
 /**
  * Class SignatureKeyPair
@@ -86,13 +89,13 @@ final class SignatureKeyPair extends KeyPair
                     );
                 } elseif ($keys[1]->isPublicKey()) {
                     $this->setupKeyPair(
-                    // @codeCoverageIgnoreStart
+                        // @codeCoverageIgnoreStart
                         $keys[0] instanceof SignatureSecretKey
                             ? $keys[0]
                             : new SignatureSecretKey(
                                 new HiddenString($keys[0]->getRawKeyMaterial())
                             )
-                    // @codeCoverageIgnoreEnd
+                        // @codeCoverageIgnoreEnd
                     );
                 } else {
                     throw new InvalidKey(
@@ -100,9 +103,9 @@ final class SignatureKeyPair extends KeyPair
                     );
                 }
                 break;
-            /**
-             * If we only received one key, it must be an asymmetric secret key!
-             */
+                /**
+                 * If we only received one key, it must be an asymmetric secret key!
+                 */
             case 1:
                 if (!$keys[0]->isAsymmetricKey()) {
                     throw new InvalidKey(
@@ -116,13 +119,13 @@ final class SignatureKeyPair extends KeyPair
                     );
                 }
                 $this->setupKeyPair(
-                // @codeCoverageIgnoreStart
+                    // @codeCoverageIgnoreStart
                     $keys[0] instanceof SignatureSecretKey
                         ? $keys[0]
                         : new SignatureSecretKey(
                             new HiddenString($keys[0]->getRawKeyMaterial())
                         )
-                // @codeCoverageIgnoreEnd
+                    // @codeCoverageIgnoreEnd
                 );
                 break;
             default:

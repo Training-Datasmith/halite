@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Contract;
 
 use ParagonIE\Halite\Alerts\{
@@ -52,7 +54,7 @@ interface StreamInterface
      * How many bytes are left between here and the end of the stream?
      */
     public function remainingBytes(): int;
-    
+
     /**
      * Write to a stream; prevent partial writes
      *

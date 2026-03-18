@@ -1,19 +1,24 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Asymmetric;
 
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\Halite\Alerts\InvalidKey;
 use ParagonIE\HiddenString\HiddenString;
+
+use function sodium_crypto_sign_ed25519_pk_to_curve25519;
+use function sodium_crypto_sign_ed25519_sk_to_curve25519;
+use function sodium_crypto_sign_publickey_from_secretkey;
+
+use const SODIUM_CRYPTO_SIGN_SECRETKEYBYTES;
+
 use SodiumException;
+
+use function sprintf;
+
 use TypeError;
-use const
-    SODIUM_CRYPTO_SIGN_SECRETKEYBYTES;
-use function
-    sodium_crypto_sign_ed25519_sk_to_curve25519,
-    sodium_crypto_sign_ed25519_pk_to_curve25519,
-    sodium_crypto_sign_publickey_from_secretkey,
-    sprintf;
 
 /**
  * Class SignatureSecretKey
@@ -49,7 +54,7 @@ final class SignatureSecretKey extends SecretKey
         parent::__construct($keyMaterial, $pk);
         $this->isSigningKey = true;
     }
-    
+
     /**
      * See the appropriate derived class.
      *

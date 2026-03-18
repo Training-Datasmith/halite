@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -9,35 +10,35 @@ final class RemoteStream
     private $contents;
     private $position = 0;
 
-    function stream_open($path, $mode, $options, &$opened_path)
+    public function stream_open($path, $mode, $options, &$opened_path)
     {
         $this->contents = \file_get_contents(__DIR__ . '/tmp/' . parse_url($path, PHP_URL_HOST));
         return true;
     }
 
-    function stream_read($count)
+    public function stream_read($count)
     {
         $return = \substr($this->contents, $this->position, $count);
         $this->position += strlen($return);
         return $return;
     }
 
-    function stream_write($data)
+    public function stream_write($data)
     {
         return false;
     }
 
-    function stream_tell()
+    public function stream_tell()
     {
         return $this->position;
     }
 
-    function stream_eof()
+    public function stream_eof()
     {
         return $this->position >= \strlen($this->contents);
     }
 
-    function stream_seek($offset, $whence)
+    public function stream_seek($offset, $whence)
     {
         switch ($whence) {
             case SEEK_SET:
@@ -66,12 +67,12 @@ final class RemoteStream
         }
     }
 
-    function stream_metadata($path, $option, $var)
+    public function stream_metadata($path, $option, $var)
     {
         return false;
     }
 
-    function stream_stat()
+    public function stream_stat()
     {
         return false;
     }

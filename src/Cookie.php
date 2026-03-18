@@ -1,6 +1,13 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
+
+use function hash_equals;
+use function is_string;
+use function json_decode;
+use function json_encode;
 
 use ParagonIE\ConstantTime\{
     Base64UrlSafe,
@@ -20,14 +27,11 @@ use ParagonIE\Halite\Symmetric\{
     EncryptionKey
 };
 use ParagonIE\HiddenString\HiddenString;
+
+use function setcookie;
+
 use SodiumException;
 use TypeError;
-use function
-    hash_equals,
-    is_string,
-    json_decode,
-    json_encode,
-    setcookie;
 
 /**
  * Class Cookie
@@ -47,7 +51,7 @@ use function
  *
  * @codeCoverageIgnore
  */
-final class Cookie 
+final class Cookie
 {
     /**
      * Cookie constructor.
@@ -62,7 +66,7 @@ final class Cookie
     public function __debugInfo(): array
     {
         return [
-            'key' => 'private'
+            'key' => 'private',
         ];
     }
 

@@ -1,18 +1,19 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
 
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    FileAccessDenied,
-    FileError,
-    FileModified,
-    InvalidDigestLength,
-    InvalidKey,
-    InvalidMessage,
-    InvalidSignature,
-    InvalidType
-};
+use function array_shift;
+
+use Error;
+use Exception;
+
+use function hash_equals;
+use function is_string;
+use function pack;
+
+use ParagonIE\ConstantTime\Binary;
 use ParagonIE\Halite\{
     Asymmetric\Crypto as AsymmetricCrypto,
     Asymmetric\EncryptionPublicKey,
@@ -26,31 +27,39 @@ use ParagonIE\Halite\{
     Symmetric\Config as SymmetricConfig,
     Symmetric\EncryptionKey
 };
-use ParagonIE\ConstantTime\Binary;
+use ParagonIE\Halite\Alerts\{
+    CannotPerformOperation,
+    FileAccessDenied,
+    FileError,
+    FileModified,
+    InvalidDigestLength,
+    InvalidKey,
+    InvalidMessage,
+    InvalidSignature,
+    InvalidType
+};
 use ParagonIE\HiddenString\HiddenString;
-use Exception;
-use Error;
+
+use function random_bytes;
+
+use const SODIUM_CRYPTO_BOX_PUBLICKEYBYTES;
+
+use function sodium_crypto_generichash;
+
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
+
+use function sodium_crypto_generichash_final;
+use function sodium_crypto_generichash_init;
+use function sodium_crypto_generichash_update;
+use function sodium_crypto_scalarmult;
+
+use const SODIUM_CRYPTO_STREAM_NONCEBYTES;
+
+use function sodium_increment;
+
+use SodiumException;
 use Throwable;
 use TypeError;
-use SodiumException;
-use const
-    SODIUM_CRYPTO_AUTH_KEYBYTES,
-    SODIUM_CRYPTO_BOX_PUBLICKEYBYTES,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
-    SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
-    SODIUM_CRYPTO_STREAM_NONCEBYTES;
-use function
-    array_shift,
-    hash_equals,
-    is_string,
-    pack,
-    random_bytes,
-    sodium_crypto_generichash,
-    sodium_crypto_generichash_init,
-    sodium_crypto_generichash_update,
-    sodium_crypto_generichash_final,
-    sodium_crypto_scalarmult,
-    sodium_increment;
 
 /**
  * Class File
@@ -585,15 +594,15 @@ final class File
                 $key->getRawKeyMaterial(),
                 (int) $config->HASH_LEN
             );
-        } elseif($config->CHECKSUM_PUBKEY && ($key instanceof SignaturePublicKey)) {
+        } elseif ($config->CHECKSUM_PUBKEY && ($key instanceof SignaturePublicKey)) {
             // In version 2, we use the public key as a hash key
             $state = sodium_crypto_generichash_init(
                 $key->getRawKeyMaterial(),
                 (int) $config->HASH_LEN
             );
-        // @codeCoverageIgnoreStart
+            // @codeCoverageIgnoreStart
         } elseif (isset($key)) {
-        // @codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
             throw new InvalidKey(
                 'Argument 2: Expected an instance of AuthenticationKey or SignaturePublicKey'
             );
@@ -761,7 +770,7 @@ final class File
         // Make sure it's large enough to even read a version tag
         if ($input->getSize() < Halite::VERSION_TAG_LEN) {
             throw new InvalidMessage(
-                "Input file is too small to have been encrypted by Halite."
+                'Input file is too small to have been encrypted by Halite.'
             );
         }
         // Parse the header, ensuring we get 4 bytes
@@ -774,7 +783,7 @@ final class File
         // Is this shorter than an encrypted empty string?
         if ($input->getSize() < $config->SHORTEST_CIPHERTEXT_LENGTH) {
             throw new InvalidMessage(
-                "Input file is too small to have been encrypted by Halite."
+                'Input file is too small to have been encrypted by Halite.'
             );
         }
 
@@ -994,7 +1003,7 @@ final class File
         // Is the file at least as long as a header?
         if ($input->getSize() < Halite::VERSION_TAG_LEN) {
             throw new InvalidMessage(
-                "Input file is too small to have been encrypted by Halite."
+                'Input file is too small to have been encrypted by Halite.'
             );
         }
 
@@ -1006,7 +1015,7 @@ final class File
 
         if ($input->getSize() < $config->SHORTEST_CIPHERTEXT_LENGTH) {
             throw new InvalidMessage(
-                "Input file is too small to have been encrypted by Halite."
+                'Input file is too small to have been encrypted by Halite.'
             );
         }
         // Let's grab the public key and salt
@@ -1225,7 +1234,7 @@ final class File
                 'USE_PAE' => true,
                 'HKDF_USE_INFO' => true,
                 'HKDF_SBOX' => 'Halite|EncryptionKey',
-                'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
+                'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite',
             ];
         }
         if ($major === 4) {
@@ -1239,7 +1248,7 @@ final class File
                 'USE_PAE' => false,
                 'HKDF_USE_INFO' => false,
                 'HKDF_SBOX' => 'Halite|EncryptionKey',
-                'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
+                'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite',
             ];
         }
         // If we reach here, we've got an invalid version tag:
@@ -1270,26 +1279,26 @@ final class File
                         'USE_PAE' => true,
                         'HKDF_USE_INFO' => true,
                         'HKDF_SBOX' => 'Halite|EncryptionKey',
-                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
+                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite',
                     ];
             }
         } elseif ($major === 4) {
-                switch ($minor) {
-                    case 0:
-                        return [
-                            'SHORTEST_CIPHERTEXT_LENGTH' => 100,
-                            'BUFFER' => 1048576,
-                            'HKDF_SALT_LEN' => 32,
-                            'MAC_SIZE' => 32,
-                            'PUBLICKEY_BYTES' => SODIUM_CRYPTO_BOX_PUBLICKEYBYTES,
-                            'ENC_ALGO' => 'XSalsa20',
-                            'USE_PAE' => false,
-                            'HKDF_USE_INFO' => false,
-                            'HKDF_SBOX' => 'Halite|EncryptionKey',
-                            'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
-                        ];
-                }
+            switch ($minor) {
+                case 0:
+                    return [
+                        'SHORTEST_CIPHERTEXT_LENGTH' => 100,
+                        'BUFFER' => 1048576,
+                        'HKDF_SALT_LEN' => 32,
+                        'MAC_SIZE' => 32,
+                        'PUBLICKEY_BYTES' => SODIUM_CRYPTO_BOX_PUBLICKEYBYTES,
+                        'ENC_ALGO' => 'XSalsa20',
+                        'USE_PAE' => false,
+                        'HKDF_USE_INFO' => false,
+                        'HKDF_SBOX' => 'Halite|EncryptionKey',
+                        'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite',
+                    ];
             }
+        }
         // @codeCoverageIgnoreStart
         throw new InvalidMessage(
             'Invalid version tag'
@@ -1310,7 +1319,7 @@ final class File
                     return [
                         'CHECKSUM_PUBKEY' => true,
                         'BUFFER' => 1048576,
-                        'HASH_LEN' => SODIUM_CRYPTO_GENERICHASH_BYTES_MAX
+                        'HASH_LEN' => SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
                     ];
             }
         }
@@ -1538,7 +1547,7 @@ final class File
             }
             // Copy the hash state then store the MAC of this chunk
             $chunkMAC = Util::safeStrcpy($mac);
-            $chunkMACs []= sodium_crypto_generichash_final(
+            $chunkMACs [] = sodium_crypto_generichash_final(
                 // @codeCoverageIgnoreStart
                 $chunkMAC,
                 // @codeCoverageIgnoreEnd

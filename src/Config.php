@@ -1,9 +1,12 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
 
-use ParagonIE\Halite\Alerts\ConfigDirectiveNotFound;
 use function array_key_exists;
+
+use ParagonIE\Halite\Alerts\ConfigDirectiveNotFound;
 
 /**
  * Class Config
@@ -51,7 +54,7 @@ class Config
     public function __construct(private array $config = [])
     {
     }
-    
+
     /**
      * Getter
      *

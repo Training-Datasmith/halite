@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
 
 use ParagonIE\Halite\Alerts\InvalidKey;
@@ -65,23 +67,23 @@ final class EncryptionKeyPair extends KeyPair
                         );
                     }
                     $this->setupKeyPair(
-                    // @codeCoverageIgnoreStart
+                        // @codeCoverageIgnoreStart
                         $keys[1] instanceof EncryptionSecretKey
                             ? $keys[1]
                             : new EncryptionSecretKey(
                                 new HiddenString($keys[1]->getRawKeyMaterial())
                             )
-                    // @codeCoverageIgnoreEnd
+                        // @codeCoverageIgnoreEnd
                     );
                 } elseif ($keys[1]->isPublicKey()) {
                     $this->setupKeyPair(
-                    // @codeCoverageIgnoreStart
+                        // @codeCoverageIgnoreStart
                         $keys[0] instanceof EncryptionSecretKey
                             ? $keys[0]
                             : new EncryptionSecretKey(
                                 new HiddenString($keys[0]->getRawKeyMaterial())
                             )
-                    // @codeCoverageIgnoreEnd
+                        // @codeCoverageIgnoreEnd
                     );
                 } else {
                     throw new InvalidKey(
@@ -89,9 +91,9 @@ final class EncryptionKeyPair extends KeyPair
                     );
                 }
                 break;
-            /**
-             * If we only received one key, it must be an asymmetric secret key!
-             */
+                /**
+                 * If we only received one key, it must be an asymmetric secret key!
+                 */
             case 1:
                 if (!$keys[0]->isAsymmetricKey()) {
                     throw new InvalidKey(
@@ -105,13 +107,13 @@ final class EncryptionKeyPair extends KeyPair
                     );
                 }
                 $this->setupKeyPair(
-                // @codeCoverageIgnoreStart
+                    // @codeCoverageIgnoreStart
                     $keys[0] instanceof EncryptionSecretKey
                         ? $keys[0]
                         : new EncryptionSecretKey(
                             new HiddenString($keys[0]->getRawKeyMaterial())
                         )
-                // @codeCoverageIgnoreEnd
+                    // @codeCoverageIgnoreEnd
                 );
                 break;
             default:

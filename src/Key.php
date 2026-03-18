@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
 
 use ParagonIE\Halite\Alerts\{
@@ -40,7 +42,7 @@ class Key implements \Stringable
      */
     public function __clone()
     {
-        throw new CannotCloneKey;
+        throw new CannotCloneKey();
     }
 
     /**
@@ -66,7 +68,7 @@ class Key implements \Stringable
         return [
             'isAsymmetricKey' => $this->isAsymmetricKey,
             'isPublicKey' => $this->isPublicKey,
-            'isSigningKey' => $this->isSigningKey
+            'isSigningKey' => $this->isSigningKey,
         ];
     }
 
@@ -88,7 +90,7 @@ class Key implements \Stringable
      */
     public function __sleep()
     {
-        throw new CannotSerializeKey;
+        throw new CannotSerializeKey();
     }
 
     /**
@@ -98,7 +100,7 @@ class Key implements \Stringable
      */
     public function __wakeup()
     {
-        throw new CannotSerializeKey;
+        throw new CannotSerializeKey();
     }
 
     /**
@@ -123,7 +125,7 @@ class Key implements \Stringable
     {
         return Util::safeStrcpy($this->keyMaterial);
     }
-    
+
     /**
      * Is this a part of a key pair?
      */
@@ -131,7 +133,7 @@ class Key implements \Stringable
     {
         return $this->isAsymmetricKey;
     }
-    
+
     /**
      * Is this a signing key?
      */
@@ -139,7 +141,7 @@ class Key implements \Stringable
     {
         return !$this->isSigningKey;
     }
-    
+
     /**
      * Is this a public key?
      */
@@ -147,7 +149,7 @@ class Key implements \Stringable
     {
         return $this->isPublicKey;
     }
-    
+
     /**
      * Is this a secret key?
      */
@@ -155,7 +157,7 @@ class Key implements \Stringable
     {
         return !$this->isPublicKey;
     }
-    
+
     /**
      * Is this a signing key?
      */

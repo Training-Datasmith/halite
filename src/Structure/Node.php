@@ -1,12 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Structure;
 
 use ParagonIE\Halite\Alerts\CannotPerformOperation;
 use ParagonIE\Halite\Util;
+
+use const SODIUM_CRYPTO_GENERICHASH_BYTES;
+
 use SodiumException;
 use TypeError;
-use const SODIUM_CRYPTO_GENERICHASH_BYTES;
 
 /**
  * Class Node

@@ -1,8 +1,17 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
 
+use function array_values;
+use function count;
+
 use Error;
+
+use function implode;
+use function pack;
+
 use ParagonIE\ConstantTime\{
     Binary,
     Hex
@@ -14,24 +23,25 @@ use ParagonIE\Halite\Alerts\{
 };
 use ParagonIE\Halite\Symmetric\EncryptionKey;
 use RangeException;
+
+use function sodium_crypto_generichash;
+
+use const SODIUM_CRYPTO_GENERICHASH_BYTES;
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MIN;
+use const SODIUM_CRYPTO_GENERICHASH_KEYBYTES;
+
+use function sodium_memzero;
+
 use SodiumException;
+
+use function sprintf;
+use function str_repeat;
+
 use Throwable;
 use TypeError;
-use const
-    SODIUM_CRYPTO_GENERICHASH_BYTES,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MIN,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
-    SODIUM_CRYPTO_GENERICHASH_KEYBYTES;
-use function
-    array_values,
-    count,
-    implode,
-    pack,
-    sodium_crypto_generichash,
-    sodium_memzero,
-    sprintf,
-    str_repeat,
-    unpack;
+
+use function unpack;
 
 /**
  * Class Util
@@ -337,7 +347,7 @@ final class Util
             );
             $return = [
                 self::raw_keyed_hash(($config->HKDF_SBOX) . $salt . "\x01", $prk),
-                self::raw_keyed_hash(($config->HKDF_AUTH) . $salt . "\x01", $prk)
+                self::raw_keyed_hash(($config->HKDF_AUTH) . $salt . "\x01", $prk),
             ];
             self::memzero($prk);
             return $return;
@@ -358,7 +368,7 @@ final class Util
                 SODIUM_CRYPTO_AUTH_KEYBYTES,
                 (string) $config->HKDF_AUTH,
                 $salt
-            )
+            ),
         ];
     }
 

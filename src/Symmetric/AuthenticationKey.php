@@ -1,13 +1,18 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite\Symmetric;
 
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\Halite\Alerts\InvalidKey;
 use ParagonIE\HiddenString\HiddenString;
-use TypeError;
+
 use const SODIUM_CRYPTO_AUTH_KEYBYTES;
+
 use function sprintf;
+
+use TypeError;
 
 /**
  * Class AuthenticationKey

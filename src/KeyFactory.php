@@ -1,16 +1,18 @@
 <?php
+
 declare(strict_types=1);
+
 namespace ParagonIE\Halite;
+
+use function file_get_contents;
+use function file_put_contents;
+use function hash_equals;
+use function is_int;
+use function is_readable;
 
 use ParagonIE\ConstantTime\{
     Binary,
     Hex
-};
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    InvalidKey,
-    InvalidSalt,
-    InvalidType
 };
 use ParagonIE\Halite\{
     Asymmetric\EncryptionPublicKey,
@@ -20,41 +22,51 @@ use ParagonIE\Halite\{
     Symmetric\AuthenticationKey,
     Symmetric\EncryptionKey
 };
+use ParagonIE\Halite\Alerts\{
+    CannotPerformOperation,
+    InvalidKey,
+    InvalidSalt,
+    InvalidType
+};
 use ParagonIE\HiddenString\HiddenString;
+
+use function random_bytes;
+
+use const SODIUM_CRYPTO_AUTH_KEYBYTES;
+
+use function sodium_crypto_box_keypair;
+use function sodium_crypto_box_publickey;
+use function sodium_crypto_box_secretkey;
+use function sodium_crypto_box_seed_keypair;
+
+use const SODIUM_CRYPTO_BOX_SEEDBYTES;
+
+use function sodium_crypto_generichash;
+
+use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
+
+use function sodium_crypto_pwhash;
+
+use const SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13;
+use const SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE;
+use const SODIUM_CRYPTO_PWHASH_MEMLIMIT_MODERATE;
+use const SODIUM_CRYPTO_PWHASH_MEMLIMIT_SENSITIVE;
+use const SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
+use const SODIUM_CRYPTO_PWHASH_OPSLIMIT_MODERATE;
+use const SODIUM_CRYPTO_PWHASH_OPSLIMIT_SENSITIVE;
+use const SODIUM_CRYPTO_PWHASH_SALTBYTES;
+
+use function sodium_crypto_sign_keypair;
+use function sodium_crypto_sign_publickey;
+use function sodium_crypto_sign_secretkey;
+use function sodium_crypto_sign_seed_keypair;
+
+use const SODIUM_CRYPTO_SIGN_SEEDBYTES;
+use const SODIUM_CRYPTO_STREAM_KEYBYTES;
+
 use SodiumException;
 use Throwable;
 use TypeError;
-use const
-    SODIUM_CRYPTO_AUTH_KEYBYTES,
-    SODIUM_CRYPTO_BOX_SEEDBYTES,
-    SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
-    SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13,
-    SODIUM_CRYPTO_PWHASH_SALTBYTES,
-    SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
-    SODIUM_CRYPTO_PWHASH_MEMLIMIT_MODERATE,
-    SODIUM_CRYPTO_PWHASH_MEMLIMIT_SENSITIVE,
-    SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
-    SODIUM_CRYPTO_PWHASH_OPSLIMIT_MODERATE,
-    SODIUM_CRYPTO_PWHASH_OPSLIMIT_SENSITIVE,
-    SODIUM_CRYPTO_SIGN_SEEDBYTES,
-    SODIUM_CRYPTO_STREAM_KEYBYTES;
-use function
-    file_get_contents,
-    file_put_contents,
-    hash_equals,
-    is_int,
-    is_readable,
-    random_bytes,
-    sodium_crypto_box_keypair,
-    sodium_crypto_box_publickey,
-    sodium_crypto_box_secretkey,
-    sodium_crypto_box_seed_keypair,
-    sodium_crypto_generichash,
-    sodium_crypto_pwhash,
-    sodium_crypto_sign_keypair,
-    sodium_crypto_sign_publickey,
-    sodium_crypto_sign_secretkey,
-    sodium_crypto_sign_seed_keypair;
 
 /**
  * Class KeyFactory
@@ -75,9 +87,9 @@ use function
 final class KeyFactory
 {
     // For key derivation security levels:
-    const INTERACTIVE = 'interactive';
-    const MODERATE = 'moderate';
-    const SENSITIVE = 'sensitive';
+    public const INTERACTIVE = 'interactive';
+    public const MODERATE = 'moderate';
+    public const SENSITIVE = 'sensitive';
 
     /**
      * Generate an authentication key (symmetric-key cryptography)
@@ -99,7 +111,7 @@ final class KeyFactory
             new HiddenString($secretKey)
         );
     }
-    
+
     /**
      * Generate an encryption key (symmetric-key cryptography)
      *
@@ -136,7 +148,7 @@ final class KeyFactory
         $kp = sodium_crypto_box_keypair();
         $secretKey = sodium_crypto_box_secretkey($kp);
         $publicKey = sodium_crypto_box_publickey($kp);
-        
+
         // Let's wipe our $kp variable
         Util::memzero($kp);
         return new EncryptionKeyPair(
@@ -146,7 +158,7 @@ final class KeyFactory
             )
         );
     }
-    
+
     /**
      * Generate a key pair for public key digital signatures
      *
@@ -162,7 +174,7 @@ final class KeyFactory
         $kp = sodium_crypto_sign_keypair();
         $secretKey = sodium_crypto_sign_secretkey($kp);
         $publicKey = sodium_crypto_sign_publickey($kp);
-        
+
         // Let's wipe our $kp variable
         Util::memzero($kp);
         return new SignatureKeyPair(
@@ -214,7 +226,7 @@ final class KeyFactory
             new HiddenString($secretKey)
         );
     }
-    
+
     /**
      * Derive an encryption key (symmetric-key cryptography) from a password
      * and salt
@@ -299,7 +311,7 @@ final class KeyFactory
         $keyPair = sodium_crypto_box_seed_keypair($seed);
         $secretKey = sodium_crypto_box_secretkey($keyPair);
         $publicKey = sodium_crypto_box_publickey($keyPair);
-        
+
         // Let's wipe our $kp variable
         Util::memzero($keyPair);
         return new EncryptionKeyPair(
@@ -309,7 +321,7 @@ final class KeyFactory
             )
         );
     }
-    
+
     /**
      * Derive a key pair for public key signatures from a password and salt
      *
@@ -351,7 +363,7 @@ final class KeyFactory
         $keyPair = sodium_crypto_sign_seed_keypair($seed);
         $secretKey = sodium_crypto_sign_secretkey($keyPair);
         $publicKey = sodium_crypto_sign_publickey($keyPair);
-        
+
         // Let's wipe our $kp variable
         Util::memzero($keyPair);
         return new SignatureKeyPair(
@@ -382,7 +394,7 @@ final class KeyFactory
                 }
                 return [
                     SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
-                    SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE
+                    SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
                 ];
             case self::MODERATE:
                 if ($alg === SODIUM_CRYPTO_PWHASH_ALG_ARGON2I13) {
@@ -391,7 +403,7 @@ final class KeyFactory
                 }
                 return [
                     SODIUM_CRYPTO_PWHASH_OPSLIMIT_MODERATE,
-                    SODIUM_CRYPTO_PWHASH_MEMLIMIT_MODERATE
+                    SODIUM_CRYPTO_PWHASH_MEMLIMIT_MODERATE,
                 ];
             case self::SENSITIVE:
                 if ($alg === SODIUM_CRYPTO_PWHASH_ALG_ARGON2I13) {
@@ -400,7 +412,7 @@ final class KeyFactory
                 }
                 return [
                     SODIUM_CRYPTO_PWHASH_OPSLIMIT_SENSITIVE,
-                    SODIUM_CRYPTO_PWHASH_MEMLIMIT_SENSITIVE
+                    SODIUM_CRYPTO_PWHASH_MEMLIMIT_SENSITIVE,
                 ];
             default:
                 throw new InvalidType(
@@ -572,7 +584,7 @@ final class KeyFactory
             )
         );
     }
-    
+
     /**
      * Load a symmetric authentication key from a file
      *
@@ -595,7 +607,7 @@ final class KeyFactory
             self::loadKeyFile($filePath)
         );
     }
-    
+
     /**
      * Load a symmetric encryption key from a file
      *
@@ -618,7 +630,7 @@ final class KeyFactory
             self::loadKeyFile($filePath)
         );
     }
-    
+
     /**
      * Load, specifically, an encryption public key from a file
      *
@@ -641,7 +653,7 @@ final class KeyFactory
             self::loadKeyFile($filePath)
         );
     }
-    
+
     /**
      * Load, specifically, an encryption public key from a file
      *
@@ -664,7 +676,7 @@ final class KeyFactory
             self::loadKeyFile($filePath)
         );
     }
-    
+
     /**
      * Load, specifically, a signature public key from a file
      *
@@ -687,7 +699,7 @@ final class KeyFactory
             self::loadKeyFile($filePath)
         );
     }
-    
+
     /**
      * Load, specifically, a signature secret key from a file
      *
@@ -735,7 +747,7 @@ final class KeyFactory
             )
         );
     }
-    
+
     /**
      * Load an asymmetric signature key pair from a file
      *
@@ -808,7 +820,7 @@ final class KeyFactory
         }
         return self::saveKeyFile($filename, $key->getRawKeyMaterial());
     }
-    
+
     /**
      * Read a key from a file, verify its checksum
      *
@@ -835,7 +847,7 @@ final class KeyFactory
             self::getKeyDataFromString($data)
         );
     }
-    
+
     /**
      * Take a stored key string, get the derived key (after verifying the
      * checksum)
@@ -900,6 +912,6 @@ final class KeyFactory
                 )
             )
         );
-        return is_int($saved );
+        return is_int($saved);
     }
 }
