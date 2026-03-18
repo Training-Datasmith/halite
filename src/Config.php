@@ -46,43 +46,22 @@ use function array_key_exists;
 class Config
 {
     /**
-     * @var array
-     */
-    private array $config;
-
-    /**
      * Config constructor.
-     * @param array $set
      */
-    public function __construct(array $set = [])
+    public function __construct(private array $config = [])
     {
-        $this->config = $set;
     }
     
     /**
      * Getter
      *
-     * @param string $key
-     * @return mixed
      * @throws ConfigDirectiveNotFound
      */
-    public function __get(string $key)
+    public function __get(string $key): mixed
     {
         if (array_key_exists($key, $this->config)) {
             return $this->config[$key];
         }
         throw new ConfigDirectiveNotFound($key);
-    }
-    
-    /**
-     * Setter (NOP)
-     * 
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     * @codeCoverageIgnore
-     */
-    public function __set(string $key, mixed $value = null): void
-    {
     }
 }

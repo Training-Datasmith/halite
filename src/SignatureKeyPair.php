@@ -49,7 +49,6 @@ final class SignatureKeyPair extends KeyPair
     /**
      * Pass it a secret key, it will automatically generate a public key
      *
-     * @param Key ...$keys
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -134,7 +133,6 @@ final class SignatureKeyPair extends KeyPair
     }
 
     /**
-     * @return EncryptionKeyPair
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -151,8 +149,6 @@ final class SignatureKeyPair extends KeyPair
     /**
      * Set up our key pair
      *
-     * @param SignatureSecretKey $secret
-     * @return void
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -170,7 +166,7 @@ final class SignatureKeyPair extends KeyPair
      *
      * @return SignaturePublicKey
      */
-    public function getPublicKey()
+    public function getPublicKey(): \ParagonIE\Halite\Asymmetric\PublicKey
     {
         return $this->publicKey;
     }
@@ -180,7 +176,7 @@ final class SignatureKeyPair extends KeyPair
      *
      * @return SignatureSecretKey
      */
-    public function getSecretKey()
+    public function getSecretKey(): \ParagonIE\Halite\Asymmetric\SecretKey
     {
         return $this->secretKey;
     }

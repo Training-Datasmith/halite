@@ -69,7 +69,6 @@ class ReadOnlyFile implements StreamInterface
      * ReadOnlyFile constructor.
      *
      * @param string|resource $file
-     * @param Key|null $key
      *
      * @throws FileAccessDenied
      * @throws FileError
@@ -116,7 +115,7 @@ class ReadOnlyFile implements StreamInterface
             );
         }
         // @codeCoverageIgnoreStart
-        $this->hashKey = !empty($key)
+        $this->hashKey = $key instanceof \ParagonIE\Halite\Key
             ? $key->getRawKeyMaterial()
             : '';
         // @codeCoverageIgnoreEnd
@@ -133,7 +132,6 @@ class ReadOnlyFile implements StreamInterface
 
     /**
      * Close the file handle.
-     * @return void
      *
      * @psalm-suppress InvalidPropertyAssignmentValue
      */
@@ -149,7 +147,6 @@ class ReadOnlyFile implements StreamInterface
     /**
      * Calculate a BLAKE2b hash of a file
      *
-     * @return string
      *
      * @throws SodiumException
      * @throws FileModified
@@ -189,8 +186,6 @@ class ReadOnlyFile implements StreamInterface
 
     /**
      * Where are we in the buffer?
-     *
-     * @return int
      */
     public function getPos(): int
     {
@@ -199,8 +194,6 @@ class ReadOnlyFile implements StreamInterface
 
     /**
      * How big is this buffer?
-     *
-     * @return int
      */
     public function getSize(): int
     {
@@ -209,8 +202,6 @@ class ReadOnlyFile implements StreamInterface
 
     /**
      * Get information about the stream.
-     *
-     * @return array
      */
     public function getStreamMetadata(): array
     {
@@ -223,12 +214,10 @@ class ReadOnlyFile implements StreamInterface
      * and aren't concerned about race condition attacks, but this isn't a
      * decision to make lightly!)
      *
-     * @param int $num
      * @param bool $skipTests  Only set this to TRUE if you're absolutely sure
      *                         that you don't want to defend against TOCTOU /
      *                         race condition attacks on the filesystem!
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -239,7 +228,9 @@ class ReadOnlyFile implements StreamInterface
         // @codeCoverageIgnoreStart
         if ($num < 0) {
             throw new CannotPerformOperation('num < 0');
-        } elseif ($num === 0) {
+        }
+        // @codeCoverageIgnoreStart
+        if ($num === 0) {
             return '';
         }
         if (($this->pos + $num) > $this->stat['size']) {
@@ -275,24 +266,18 @@ class ReadOnlyFile implements StreamInterface
 
     /**
      * Get number of bytes remaining
-     *
-     * @return int
      */
     public function remainingBytes(): int
     {
-        return (int) (
-            PHP_INT_MAX & (
-                (int) $this->stat['size'] - $this->pos
-            )
+        return PHP_INT_MAX & (
+            (int) $this->stat['size'] - $this->pos
         );
     }
 
     /**
      * Set the current cursor position to the desired location
      *
-     * @param int $position
      *
-     * @return bool
      *
      * @throws CannotPerformOperation
      */
@@ -314,7 +299,6 @@ class ReadOnlyFile implements StreamInterface
      * verifying that the hash matches and the current cursor position/file
      * size matches their values when the file was first opened.
      *
-     * @return void
      *
      * @throws FileModified
      */
@@ -338,10 +322,8 @@ class ReadOnlyFile implements StreamInterface
     /**
      * This is a meaningless operation for a Read-Only File!
      *
-     * @param string $buf
      * @param ?int $num (number of bytes)
      *
-     * @return int
      *
      * @throws FileAccessDenied
      */
@@ -356,8 +338,6 @@ class ReadOnlyFile implements StreamInterface
 
     /**
      * Wraps fstat to allow calculation of file-size on stream wrappers.
-     *
-     * @return array
      */
     private function fstat() : array {
       $stat = fstat($this->fp);

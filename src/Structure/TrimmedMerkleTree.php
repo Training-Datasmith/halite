@@ -38,7 +38,6 @@ class TrimmedMerkleTree extends MerkleTree
      * leaves and branches (0x01 for the nodes, 0x00 for the branches)
      * to protect against second-preimage attacks
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws SodiumException
@@ -95,9 +94,7 @@ class TrimmedMerkleTree extends MerkleTree
     /**
      * Merkle Trees are immutable. Return a replacement with extra nodes.
      *
-     * @param Node ...$nodes
      *
-     * @return TrimmedMerkleTree
      *
      * @throws InvalidDigestLength
      */

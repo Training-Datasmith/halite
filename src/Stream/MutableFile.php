@@ -50,10 +50,6 @@ class MutableFile implements StreamInterface
 {
     const ALLOWED_MODES = ['r+b', 'w+b', 'cb', 'c+b', 'wb'];
     const CHUNK = 8192; // PHP's fread() buffer is set to 8192 by default
-
-    /**
-     * @var bool
-     */
     private bool $closeAfter = false;
 
     /**
@@ -61,15 +57,9 @@ class MutableFile implements StreamInterface
      */
     private $fp;
 
-    /**
-     * @var int
-     */
     private int $pos;
 
-    /**
-     * @var array
-     */
-    private $stat = [];
+    private array|bool $stat = [];
 
     /**
      * MutableFile constructor.
@@ -133,7 +123,6 @@ class MutableFile implements StreamInterface
     /**
      * Close the file handle.
      *
-     * @return void
      *
      * @psalm-suppress InvalidPropertyAssignmentValue
      */
@@ -156,8 +145,6 @@ class MutableFile implements StreamInterface
 
     /**
      * Where are we in the buffer?
-     *
-     * @return int
      */
     public function getPos(): int
     {
@@ -166,19 +153,15 @@ class MutableFile implements StreamInterface
 
     /**
      * How big is this buffer?
-     *
-     * @return int
      */
     public function getSize(): int
     {
         $stat = fstat($this->fp);
-        return (int) $stat['size'];
+        return $stat['size'];
     }
 
     /**
      * Get information about the stream.
-     *
-     * @return array
      */
     public function getStreamMetadata(): array
     {
@@ -188,10 +171,7 @@ class MutableFile implements StreamInterface
     /**
      * Read from a stream; prevent partial reads
      *
-     * @param int $num
-     * @param bool $skipTests
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -201,7 +181,9 @@ class MutableFile implements StreamInterface
         // @codeCoverageIgnoreStart
         if ($num < 0) {
             throw new CannotPerformOperation('num < 0');
-        } elseif ($num === 0) {
+        }
+        // @codeCoverageIgnoreStart
+        if ($num === 0) {
             return '';
         }
         if (($this->pos + $num) > $this->stat['size']) {
@@ -235,8 +217,6 @@ class MutableFile implements StreamInterface
 
     /**
      * Get number of bytes remaining
-     *
-     * @return int
      */
     public function remainingBytes(): int
     {
@@ -244,19 +224,15 @@ class MutableFile implements StreamInterface
         $stat = fstat($this->fp);
         /** @var int $pos */
         $pos = ftell($this->fp);
-        return (int) (
-            PHP_INT_MAX & (
-                (int) $stat['size'] - $pos
-            )
+        return PHP_INT_MAX & (
+            (int) $stat['size'] - $pos
         );
     }
     
     /**
      * Set the current cursor position to the desired location
-     * 
-     * @param int $position
      *
-     * @return bool
+     *
      *
      * @throws CannotPerformOperation
      * @codeCoverageIgnore
@@ -275,10 +251,8 @@ class MutableFile implements StreamInterface
     /**
      * Write to a stream; prevent partial writes
      *
-     * @param string $buf
      * @param ?int $num (number of bytes)
      *
-     * @return int
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied

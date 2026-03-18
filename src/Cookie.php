@@ -49,21 +49,15 @@ use function
  */
 final class Cookie 
 {
-    protected EncryptionKey $key;
-
     /**
      * Cookie constructor.
-     * @param EncryptionKey $key
      */
-    public function __construct(EncryptionKey $key)
+    public function __construct(protected EncryptionKey $key)
     {
-        $this->key = $key;
     }
 
     /**
      * Hide this from var_dump(), etc.
-     * 
-     * @return array
      */
     public function __debugInfo(): array
     {
@@ -75,7 +69,6 @@ final class Cookie
     /**
      * Fetch a value from an encrypted cookie
      *
-     * @param string $name
      *
      * @return mixed|null (typically an array)
      *
@@ -107,7 +100,7 @@ final class Cookie
                 $encoding
             );
             return json_decode($decrypted->getString(), true);
-        } catch (InvalidMessage $e) {
+        } catch (InvalidMessage) {
             return null;
         }
     }
@@ -116,7 +109,6 @@ final class Cookie
      * Get the configuration for this version of halite
      *
      * @param string $stored   A stored password hash
-     * @return SymmetricConfig
      *
      * @throws InvalidMessage
      * @throws TypeError
@@ -144,7 +136,6 @@ final class Cookie
     /**
      * Store a value in an encrypted cookie
      *
-     * @param string $name
      * @param mixed $value
      * @param int $expire    (defaults to 0)
      * @param string $path   (defaults to '/')
@@ -153,7 +144,6 @@ final class Cookie
      * @param bool $httpOnly (defaults to TRUE)
      * @param string $sameSite (defaults to ''; PHP >= 7.3.0)
      *
-     * @return bool
      *
      * @throws InvalidDigestLength
      * @throws CannotPerformOperation
@@ -161,7 +151,6 @@ final class Cookie
      * @throws InvalidType
      * @throws SodiumException
      * @throws TypeError
-     *
      * @psalm-suppress InvalidArgument  PHP version incompatibilities
      * @psalm-suppress MixedArgument
      */
@@ -184,14 +173,14 @@ final class Cookie
             $this->key
         );
         $options = [
-            'expires' => (int) $expire,
-            'path' => (string) $path,
-            'domain' => (string) $domain,
-            'secure' => (bool) $secure,
-            'httponly' => (bool) $httpOnly,
+            'expires' => $expire,
+            'path' => $path,
+            'domain' => $domain,
+            'secure' => $secure,
+            'httponly' => $httpOnly,
         ];
         if ($sameSite !== '') {
-            $options['samesite'] = (string) $sameSite;
+            $options['samesite'] = $sameSite;
         }
         return setcookie(
             $name,

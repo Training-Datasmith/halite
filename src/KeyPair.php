@@ -44,22 +44,20 @@ class KeyPair
 
     /**
      * Get a Key object for the public key
-     * 
-     * @return PublicKey
+     *
      * @codeCoverageIgnore
      */
-    public function getPublicKey()
+    public function getPublicKey(): \ParagonIE\Halite\Asymmetric\PublicKey
     {
        return $this->publicKey;
     }
 
     /**
      * Get a Key object for the secret key
-     * 
-     * @return SecretKey
+     *
      * @codeCoverageIgnore
      */
-    public function getSecretKey()
+    public function getSecretKey(): \ParagonIE\Halite\Asymmetric\SecretKey
     {
        return $this->secretKey;
     }

@@ -25,7 +25,7 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class Key
+class Key implements \Stringable
 {
     protected bool $isPublicKey = false;
     protected bool $isSigningKey = false;
@@ -104,10 +104,9 @@ class Key
     /**
      * Get public keys
      *
-     * @return string
      * @codeCoverageIgnore
      */
-    public function __toString()
+    public function __toString(): string
     {
         if ($this->isPublicKey) {
             return $this->keyMaterial;
@@ -118,7 +117,6 @@ class Key
     /**
      * Get the actual key material
      *
-     * @return string
      * @throws TypeError
      */
     public function getRawKeyMaterial(): string
@@ -128,8 +126,6 @@ class Key
     
     /**
      * Is this a part of a key pair?
-     * 
-     * @return bool
      */
     public function isAsymmetricKey(): bool
     {
@@ -138,8 +134,6 @@ class Key
     
     /**
      * Is this a signing key?
-     * 
-     * @return bool
      */
     public function isEncryptionKey(): bool
     {
@@ -148,8 +142,6 @@ class Key
     
     /**
      * Is this a public key?
-     * 
-     * @return bool
      */
     public function isPublicKey(): bool
     {
@@ -158,8 +150,6 @@ class Key
     
     /**
      * Is this a secret key?
-     * 
-     * @return bool
      */
     public function isSecretKey(): bool
     {
@@ -168,8 +158,6 @@ class Key
     
     /**
      * Is this a signing key?
-     * 
-     * @return bool
      */
     public function isSigningKey(): bool
     {

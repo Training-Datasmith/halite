@@ -82,7 +82,6 @@ final class KeyFactory
     /**
      * Generate an authentication key (symmetric-key cryptography)
      *
-     * @return AuthenticationKey
      * @throws CannotPerformOperation
      * @throws InvalidKey
      * @throws \TypeError
@@ -104,7 +103,6 @@ final class KeyFactory
     /**
      * Generate an encryption key (symmetric-key cryptography)
      *
-     * @return EncryptionKey
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -127,7 +125,6 @@ final class KeyFactory
     /**
      * Generate a key pair for public key encryption
      *
-     * @return EncryptionKeyPair
      *
      * @throws InvalidKey
      * @throws TypeError
@@ -153,7 +150,6 @@ final class KeyFactory
     /**
      * Generate a key pair for public key digital signatures
      *
-     * @return SignatureKeyPair
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -180,13 +176,10 @@ final class KeyFactory
     /**
      * Derive an authentication key (symmetric) from a password and salt
      *
-     * @param HiddenString $password
-     * @param string $salt
      * @param string $level Security level for KDF
      * @param int $alg      Which Argon2 variant to use?
      *                      (You can safely use the default)
      *
-     * @return AuthenticationKey
      *
      * @throws InvalidKey
      * @throws InvalidSalt
@@ -226,13 +219,10 @@ final class KeyFactory
      * Derive an encryption key (symmetric-key cryptography) from a password
      * and salt
      *
-     * @param HiddenString $password
-     * @param string $salt
      * @param string $level Security level for KDF
      * @param int $alg      Which Argon2 variant to use?
      *                      (You can safely use the default)
-     * 
-     * @return EncryptionKey
+     *
      *
      * @throws InvalidKey
      * @throws InvalidSalt
@@ -271,13 +261,10 @@ final class KeyFactory
     /**
      * Derive a key pair for public key encryption from a password and salt
      *
-     * @param HiddenString $password
-     * @param string $salt
      * @param string $level Security level for KDF
      * @param int $alg      Which Argon2 variant to use?
      *                      (You can safely use the default)
      *
-     * @return EncryptionKeyPair
      *
      * @throws InvalidKey
      * @throws InvalidSalt
@@ -325,14 +312,11 @@ final class KeyFactory
     
     /**
      * Derive a key pair for public key signatures from a password and salt
-     * 
-     * @param HiddenString $password
-     * @param string $salt
+     *
      * @param string $level Security level for KDF
      * @param int $alg      Which Argon2 variant to use?
      *                      (You can safely use the default)
      *
-     * @return SignatureKeyPair
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -381,11 +365,8 @@ final class KeyFactory
     /**
      * Returns a 2D array [OPSLIMIT, MEMLIMIT] for the appropriate security level.
      *
-     * @param string $level
-     * @param int $alg
      *
      * @return int[]
-     *
      * @throws InvalidType
      * @codeCoverageIgnore
      */
@@ -431,9 +412,7 @@ final class KeyFactory
     /**
      * Load a symmetric authentication key from a string
      *
-     * @param HiddenString $keyData
      *
-     * @return AuthenticationKey
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -453,9 +432,7 @@ final class KeyFactory
     /**
      * Load a symmetric encryption key from a string
      *
-     * @param HiddenString $keyData
      *
-     * @return EncryptionKey
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -475,9 +452,7 @@ final class KeyFactory
     /**
      * Load, specifically, an encryption public key from a string
      *
-     * @param HiddenString $keyData
      *
-     * @return EncryptionPublicKey
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -497,9 +472,7 @@ final class KeyFactory
     /**
      * Load, specifically, an encryption secret key from a string
      *
-     * @param HiddenString $keyData
      *
-     * @return EncryptionSecretKey
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -519,9 +492,7 @@ final class KeyFactory
     /**
      * Load, specifically, a signature public key from a string
      *
-     * @param HiddenString $keyData
      *
-     * @return SignaturePublicKey
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -541,9 +512,7 @@ final class KeyFactory
     /**
      * Load, specifically, a signature secret key from a string
      *
-     * @param HiddenString $keyData
      *
-     * @return SignatureSecretKey
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -563,9 +532,7 @@ final class KeyFactory
     /**
      * Load an asymmetric encryption key pair from a string
      *
-     * @param HiddenString $keyData
      *
-     * @return EncryptionKeyPair
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -587,8 +554,6 @@ final class KeyFactory
     /**
      * Load an asymmetric signature key pair from a string
      *
-     * @param HiddenString $keyData
-     * @return SignatureKeyPair
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -610,10 +575,8 @@ final class KeyFactory
     
     /**
      * Load a symmetric authentication key from a file
-     * 
-     * @param string $filePath
      *
-     * @return AuthenticationKey
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -635,10 +598,8 @@ final class KeyFactory
     
     /**
      * Load a symmetric encryption key from a file
-     * 
-     * @param string $filePath
      *
-     * @return EncryptionKey
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -660,10 +621,8 @@ final class KeyFactory
     
     /**
      * Load, specifically, an encryption public key from a file
-     * 
-     * @param string $filePath
      *
-     * @return EncryptionPublicKey
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -685,10 +644,8 @@ final class KeyFactory
     
     /**
      * Load, specifically, an encryption public key from a file
-     * 
-     * @param string $filePath
      *
-     * @return EncryptionSecretKey
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -710,10 +667,8 @@ final class KeyFactory
     
     /**
      * Load, specifically, a signature public key from a file
-     * 
-     * @param string $filePath
      *
-     * @return SignaturePublicKey
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -735,10 +690,8 @@ final class KeyFactory
     
     /**
      * Load, specifically, a signature secret key from a file
-     * 
-     * @param string $filePath
      *
-     * @return SignatureSecretKey
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -761,9 +714,7 @@ final class KeyFactory
     /**
      * Load an asymmetric encryption key pair from a file
      *
-     * @param string $filePath
      *
-     * @return EncryptionKeyPair
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -787,10 +738,8 @@ final class KeyFactory
     
     /**
      * Load an asymmetric signature key pair from a file
-     * 
-     * @param string $filePath
      *
-     * @return SignatureKeyPair
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -815,9 +764,7 @@ final class KeyFactory
     /**
      * Export a cryptography key to a string (with a checksum)
      *
-     * @param Key|KeyPair $key
      *
-     * @return HiddenString
      *
      * @throws CannotPerformOperation
      * @throws InvalidType
@@ -846,10 +793,7 @@ final class KeyFactory
     /**
      * Save a key to a file
      *
-     * @param Key|KeyPair $key
-     * @param string $filename
      *
-     * @return bool
      *
      * @throws SodiumException
      * @throws TypeError
@@ -867,10 +811,8 @@ final class KeyFactory
     
     /**
      * Read a key from a file, verify its checksum
-     * 
-     * @param string $filePath
      *
-     * @return HiddenString
+     *
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -897,10 +839,8 @@ final class KeyFactory
     /**
      * Take a stored key string, get the derived key (after verifying the
      * checksum)
-     * 
-     * @param string $data
      *
-     * @return string
+     *
      *
      * @throws InvalidKey
      * @throws SodiumException
@@ -941,9 +881,6 @@ final class KeyFactory
     /**
      * Save a key to a file
      *
-     * @param string $filePath
-     * @param string $keyData
-     * @return bool
      *
      * @throws SodiumException
      * @throws TypeError

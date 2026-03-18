@@ -40,7 +40,6 @@ final class EncryptionKeyPair extends KeyPair
     /**
      * Pass it a secret key, it will automatically generate a public key
      *
-     * @param Key ...$keys
      *
      * @throws InvalidKey
      * @throws \InvalidArgumentException
@@ -125,8 +124,6 @@ final class EncryptionKeyPair extends KeyPair
     /**
      * Set up our key pair
      *
-     * @param EncryptionSecretKey $secret
-     * @return void
      *
      * @throws InvalidKey
      * @throws \TypeError
@@ -144,7 +141,7 @@ final class EncryptionKeyPair extends KeyPair
      *
      * @return EncryptionPublicKey
      */
-    public function getPublicKey()
+    public function getPublicKey(): \ParagonIE\Halite\Asymmetric\PublicKey
     {
         return $this->publicKey;
     }
@@ -154,7 +151,7 @@ final class EncryptionKeyPair extends KeyPair
      *
      * @return EncryptionSecretKey
      */
-    public function getSecretKey()
+    public function getSecretKey(): \ParagonIE\Halite\Asymmetric\SecretKey
     {
         return $this->secretKey;
     }

@@ -86,7 +86,6 @@ final class File
      * the entire file into memory. You may optionally supply a key to use in
      * the BLAKE2b hash.
      *
-     * @param string|ReadOnlyFile $filePath
      * @param ?Key $key (optional; expects SignaturePublicKey or
      *                  AuthenticationKey)
      * @param bool|string $encoding Which encoding scheme to use for the checksum?
@@ -131,12 +130,6 @@ final class File
     }
 
     /**
-     * @param string|ReadOnlyFile $input
-     * @param string|MutableFile $output
-     * @param EncryptionPublicKey $recipientPK
-     * @param EncryptionSecretKey $senderSK
-     * @param string|null $aad
-     * @return int
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -195,12 +188,6 @@ final class File
     }
 
     /**
-     * @param string|ReadOnlyFile $input
-     * @param string|MutableFile $output
-     * @param EncryptionSecretKey $recipientSK
-     * @param EncryptionPublicKey $senderPK
-     * @param string|null $aad
-     * @return bool
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -370,7 +357,6 @@ final class File
      * @param string|MutableFile $output     Output file
      * @param EncryptionPublicKey $publicKey Recipient's encryption public key
      * @param string|null $aad               Additional authenticated data
-     * @return int
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -504,17 +490,16 @@ final class File
             );
             $filename->reset($pos);
             return $signature;
-        } else {
-            $readOnly = new ReadOnlyFile($filename);
-            try {
-                return self::signData(
-                    $readOnly,
-                    $secretKey,
-                    $encoding
-                );
-            } finally {
-                $readOnly->close();
-            }
+        }
+        $readOnly = new ReadOnlyFile($filename);
+        try {
+            return self::signData(
+                $readOnly,
+                $secretKey,
+                $encoding
+            );
+        } finally {
+            $readOnly->close();
         }
     }
 
@@ -526,7 +511,6 @@ final class File
      * @param string $signature             The signature we received
      * @param string|bool $encoding         Which encoding scheme to use for the signature?
      *
-     * @return bool
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -555,29 +539,25 @@ final class File
             );
             $filename->reset($pos);
             return $verified;
-        } else {
-            $readOnly = new ReadOnlyFile($filename);
-            try {
-                return self::verifyData(
-                    $readOnly,
-                    $publicKey,
-                    $signature,
-                    $encoding
-                );
-            } finally {
-                $readOnly->close();
-            }
+        }
+        $readOnly = new ReadOnlyFile($filename);
+        try {
+            return self::verifyData(
+                $readOnly,
+                $publicKey,
+                $signature,
+                $encoding
+            );
+        } finally {
+            $readOnly->close();
         }
     }
 
     /**
      * Calculate the BLAKE2b checksum of the contents of a file
      *
-     * @param StreamInterface $fileStream
-     * @param ?Key $key
      * @param string|bool $encoding Which encoding scheme to use for the checksum?
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -651,7 +631,7 @@ final class File
                 )
             );
         }
-        return (string) sodium_crypto_generichash_final(
+        return sodium_crypto_generichash_final(
             // @codeCoverageIgnoreStart
             $state,
             // @codeCoverageIgnoreEnd
@@ -660,12 +640,8 @@ final class File
     }
 
     /**
-     * @param ReadOnlyFile $input
-     * @param MutableFile $output
-     * @param EncryptionKey $key
      * @param string|null $aad    Additional authenticated data
      *
-     * @return int
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -698,7 +674,7 @@ final class File
         // @codeCoverageIgnoreEnd
 
         // Let's split our key
-        list ($encKey, $authKey) = Util::splitKeys($key, $hkdfSalt, $config);
+        [$encKey, $authKey] = Util::splitKeys($key, $hkdfSalt, $config);
 
         // Write the header
         $output->writeBytes(
@@ -753,7 +729,7 @@ final class File
                 new HiddenString($encKey)
             ),
             $firstNonce,
-            (string) $mac,
+            $mac,
             $config
         );
     }
@@ -761,11 +737,7 @@ final class File
     /**
      * Decrypt the contents of a file.
      *
-     * @param ReadOnlyFile $input
-     * @param MutableFile $output
-     * @param EncryptionKey $key
      * @param string|null $aad    Additional authenticated data
-     * @return bool
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -811,7 +783,7 @@ final class File
         $hkdfSalt = $input->readBytes((int) $config->HKDF_SALT_LEN);
 
         // Split our keys, begin the HMAC instance
-        list ($encKey, $authKey) = Util::splitKeys($key, $hkdfSalt, $config);
+        [$encKey, $authKey] = Util::splitKeys($key, $hkdfSalt, $config);
 
         // VERSION 2+ uses BMAC
         $mac = sodium_crypto_generichash_init($authKey);
@@ -855,8 +827,8 @@ final class File
             new EncryptionKey(
                 new HiddenString($encKey)
             ),
-            (string) $firstNonce,
-            (string) $mac,
+            $firstNonce,
+            $mac,
             $config,
             $old_macs
         );
@@ -875,11 +847,6 @@ final class File
     /**
      * Seal the contents of a file.
      *
-     * @param ReadOnlyFile $input
-     * @param MutableFile $output
-     * @param EncryptionPublicKey $publicKey
-     * @param ?string $aad
-     * @return int
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -936,7 +903,7 @@ final class File
          * @var string $encKey
          * @var string $authKey
          */
-        list ($encKey, $authKey) = Util::splitKeys($sharedSecretKey, $hkdfSalt, $config);
+        [$encKey, $authKey] = Util::splitKeys($sharedSecretKey, $hkdfSalt, $config);
 
         // Write the header:
         $output->writeBytes(
@@ -990,8 +957,8 @@ final class File
             new EncryptionKey(
                 new HiddenString($encKey)
             ),
-            (string) $nonce,
-            (string) $mac,
+            $nonce,
+            $mac,
             $config
         );
         Util::memzero($encKey);
@@ -1003,11 +970,6 @@ final class File
     /**
      * Unseal the contents of a file.
      *
-     * @param ReadOnlyFile $input
-     * @param MutableFile $output
-     * @param EncryptionSecretKey $secretKey
-     * @param ?string $aad
-     * @return bool
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -1080,7 +1042,7 @@ final class File
          * @var string $encKey
          * @var string $authKey
          */
-        list ($encKey, $authKey) = Util::splitKeys($key, $hkdfSalt, $config);
+        [$encKey, $authKey] = Util::splitKeys($key, $hkdfSalt, $config);
         // We no longer need the original key after we split it
         unset($key);
 
@@ -1145,10 +1107,7 @@ final class File
     /**
      * Sign the contents of a file
      *
-     * @param ReadOnlyFile $input
-     * @param SignatureSecretKey $secretKey
      * @param string|bool $encoding Which encoding scheme to use for the signature?
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
@@ -1179,11 +1138,8 @@ final class File
      * Verify the contents of a file
      *
      * @param $input (file handle)
-     * @param SignaturePublicKey $publicKey
-     * @param string $signature
      * @param string|bool $encoding Which encoding scheme to use for the signature?
      *
-     * @return bool
      *
      * @throws InvalidSignature
      * @throws CannotPerformOperation
@@ -1213,16 +1169,13 @@ final class File
     /**
      * Get the configuration
      *
-     * @param string $header
-     * @param string $mode
-     * @return Config
      * @throws InvalidMessage
      * @throws InvalidType
      */
     protected static function getConfig(
         string $header,
         string $mode = 'encrypt'
-    ): Config {
+    ): \ParagonIE\Halite\Symmetric\Config {
         if (Util::chrToInt($header[0]) !== 49 || Util::chrToInt($header[1]) !== 65) {
             // @codeCoverageIgnoreStart
             throw new InvalidMessage(
@@ -1236,11 +1189,13 @@ final class File
             return new SymmetricConfig(
                 self::getConfigEncrypt($major, $minor)
             );
-        } elseif ($mode === 'seal') {
+        }
+        if ($mode === 'seal') {
             return new SymmetricConfig(
                 self::getConfigSeal($major, $minor)
             );
-        } elseif ($mode === 'checksum') {
+        }
+        if ($mode === 'checksum') {
             return new SymmetricConfig(
                 self::getConfigChecksum($major, $minor)
             );
@@ -1255,9 +1210,6 @@ final class File
     /**
      * Get the configuration for encrypt operations
      *
-     * @param int $major
-     * @param int $minor
-     * @return array
      * @throws InvalidMessage
      */
     protected static function getConfigEncrypt(int $major, int $minor): array
@@ -1275,7 +1227,8 @@ final class File
                 'HKDF_SBOX' => 'Halite|EncryptionKey',
                 'HKDF_AUTH' => 'AuthenticationKeyFor_|Halite'
             ];
-        } elseif ($major === 4) {
+        }
+        if ($major === 4) {
             return [
                 'SHORTEST_CIPHERTEXT_LENGTH' => 92,
                 'BUFFER' => 1048576,
@@ -1300,9 +1253,6 @@ final class File
     /**
      * Get the configuration for seal operations
      *
-     * @param int $major
-     * @param int $minor
-     * @return array
      * @throws InvalidMessage
      */
     protected static function getConfigSeal(int $major, int $minor): array
@@ -1350,9 +1300,6 @@ final class File
     /**
      * Get the configuration for encrypt operations
      *
-     * @param int $major
-     * @param int $minor
-     * @return array
      * @throws InvalidMessage
      */
     protected static function getConfigChecksum(int $major, int $minor): array
@@ -1377,12 +1324,7 @@ final class File
     /**
      * Stream encryption - Do not call directly
      *
-     * @param ReadOnlyFile $input
-     * @param MutableFile $output
-     * @param EncryptionKey $encKey
-     * @param string $nonce
      * @param string $mac (hash context for BLAKE2b)
-     * @param Config $config
      *
      * @return int (number of bytes)
      *
@@ -1441,25 +1383,18 @@ final class File
             );
             // @codeCoverageIgnoreEnd
         }
-        $written += $output->writeBytes(
+        return $written + $output->writeBytes(
             sodium_crypto_generichash_final($mac, (int) $config->MAC_SIZE),
             (int) $config->MAC_SIZE
         );
-        return $written;
     }
 
     /**
      * Stream decryption - Do not call directly
      *
-     * @param ReadOnlyFile $input
-     * @param MutableFile $output
-     * @param EncryptionKey $encKey
-     * @param string $nonce
      * @param string $mac (hash context for BLAKE2b)
-     * @param Config $config
      * @param string[] &$chunk_macs
      *
-     * @return bool
      *
      * @throws FileError
      * @throws CannotPerformOperation

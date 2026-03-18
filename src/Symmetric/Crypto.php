@@ -68,11 +68,7 @@ final class Crypto
     /**
      * Authenticate a string
      *
-     * @param string $message
-     * @param AuthenticationKey $secretKey
-     * @param string|bool $encoding
      *
-     * @return string
      *
      * @throws InvalidMessage
      * @throws InvalidType
@@ -103,11 +99,7 @@ final class Crypto
     /**
      * Decrypt a message using the Halite encryption protocol
      *
-     * @param string $ciphertext
-     * @param EncryptionKey $secretKey
-     * @param string|bool $encoding
      *
-     * @return HiddenString
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -141,12 +133,7 @@ final class Crypto
      * You don't need to worry about Invisible Salamanders.
      * You don't need to worry about timing attacks on MAC validation.
      *
-     * @param string $ciphertext
-     * @param EncryptionKey $secretKey
-     * @param string $additionalData
-     * @param string|bool $encoding
      *
-     * @return HiddenString
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -169,7 +156,7 @@ final class Crypto
             try {
                 /** @var string $ciphertext */
                 $ciphertext = $decoder($ciphertext);
-            } catch (RangeException $ex) {
+            } catch (RangeException) {
                 throw new InvalidMessage(
                     'Invalid character encoding'
                 );
@@ -250,11 +237,7 @@ final class Crypto
     /**
      * Encrypt a message using the Halite encryption protocol
      *
-     * @param HiddenString $plaintext
-     * @param EncryptionKey $secretKey
-     * @param string|bool $encoding
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -286,12 +269,7 @@ final class Crypto
      * You don't need to worry about chosen-ciphertext attacks.
      * You don't need to worry about Invisible Salamanders.
      *
-     * @param HiddenString $plaintext
-     * @param EncryptionKey $secretKey
-     * @param string $additionalData
-     * @param bool|string $encoding
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -385,7 +363,6 @@ final class Crypto
      *
      * Should return exactly 6 elements.
      *
-     * @param string $ciphertext
      *
      * @return array<int, mixed>
      *
@@ -466,13 +443,7 @@ final class Crypto
     /**
      * Verify the authenticity of a message, given a shared MAC key
      *
-     * @param string $message
-     * @param AuthenticationKey $secretKey
-     * @param string $mac
-     * @param string|bool $encoding
-     * @param ?SymmetricConfig $config
      *
-     * @return bool
      *
      * @throws InvalidMessage
      * @throws InvalidSignature
@@ -508,7 +479,7 @@ final class Crypto
                 $config
             );
         // @codeCoverageIgnoreStart
-        } catch (InvalidMessage $ex) {
+        } catch (InvalidMessage) {
             return false;
         // @codeCoverageIgnoreEnd
         }
@@ -517,11 +488,7 @@ final class Crypto
     /**
      * Calculate a MAC. This is used internally.
      *
-     * @param string $message
-     * @param string $authKey
-     * @param SymmetricConfig $config
      *
-     * @return string
      *
      * @throws InvalidMessage
      * @throws SodiumException
@@ -554,7 +521,6 @@ final class Crypto
      * @param string $authKey          Authentication key (symmetric)
      * @param SymmetricConfig $config  Configuration object
      *
-     * @return bool
      *
      * @throws InvalidMessage
      * @throws InvalidSignature

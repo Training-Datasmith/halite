@@ -64,9 +64,7 @@ final class Util
     /**
      * Convert a character to an integer (without cache-timing side-channels)
      *
-     * @param string $chr
      *
-     * @return int
      *
      * @throws RangeException
      */
@@ -84,10 +82,7 @@ final class Util
      *
      * Returns hexadecimal characters.
      *
-     * @param string $input
-     * @param int $length
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws SodiumException
@@ -107,10 +102,7 @@ final class Util
      *
      * Returns raw binary.
      *
-     * @param string $input
-     * @param int $length
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws SodiumException
@@ -131,13 +123,11 @@ final class Util
      *
      * Important: instead of a true HKDF (from HMAC) construct, this uses the
      * crypto_generichash() key parameter. This is *probably* okay.
-     * 
+     *
      * @param string $ikm Initial Keying Material
      * @param int $length How many bytes?
      * @param string $info What sort of key are we deriving?
-     * @param string $salt
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -200,14 +190,12 @@ final class Util
      * Convert an array of integers to a string
      *
      * @param array<int, int> $integers
-     *
-     * @return string
      */
     public static function intArrayToString(array $integers): string
     {
         $args = $integers;
         foreach ($args as $i => $v) {
-            $args[$i] = (int) ($v & 0xff);
+            $args[$i] = $v & 0xff;
         }
         return pack(
             str_repeat('C', count($args)),
@@ -217,9 +205,6 @@ final class Util
 
     /**
      * Convert an integer to a string (without cache-timing side-channels)
-     *
-     * @param int $int
-     * @return string
      */
     public static function intToChr(int $int): string
     {
@@ -232,11 +217,7 @@ final class Util
      * Expects a key (binary string).
      * Returns hexadecimal characters.
      *
-     * @param string $input
-     * @param string $key
-     * @param int $length
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws TypeError
@@ -255,9 +236,7 @@ final class Util
     /**
      * Pre-authentication encoding
      *
-     * @param string ...$pieces
      *
-     * @return string
      */
     public static function PAE(string ...$pieces): string
     {
@@ -266,7 +245,7 @@ final class Util
         foreach ($pieces as $piece) {
             $out[] = pack('P', Binary::safeStrlen($piece)) . $piece;
         }
-        return implode($out);
+        return implode('', $out);
     }
 
     /**
@@ -275,11 +254,7 @@ final class Util
      * Expects a key (binary string).
      * Returns raw binary.
      *
-     * @param string $input
-     * @param string $key
-     * @param int $length
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws SodiumException
@@ -312,9 +287,7 @@ final class Util
      * PHP 7 uses interned strings. We don't want altering this one to alter
      * the original string.
      *
-     * @param string $string
      *
-     * @return string
      *
      * @throws TypeError
      */
@@ -335,9 +308,6 @@ final class Util
     /**
      * Split a key (using HKDF-BLAKE2b instead of HKDF-HMAC-*)
      *
-     * @param EncryptionKey $master
-     * @param string $salt
-     * @param Config $config
      *
      * @return string[]
      *
@@ -366,8 +336,8 @@ final class Util
                 str_repeat("\x00", SODIUM_CRYPTO_GENERICHASH_KEYBYTES)
             );
             $return = [
-                self::raw_keyed_hash(((string) $config->HKDF_SBOX) . $salt . "\x01", $prk),
-                self::raw_keyed_hash(((string) $config->HKDF_AUTH) . $salt . "\x01", $prk)
+                self::raw_keyed_hash(($config->HKDF_SBOX) . $salt . "\x01", $prk),
+                self::raw_keyed_hash(($config->HKDF_AUTH) . $salt . "\x01", $prk)
             ];
             self::memzero($prk);
             return $return;
@@ -395,10 +365,8 @@ final class Util
     /**
      * Turn a string into an array of integers
      *
-     * @param string $string
      *
      * @return array<int, int>
-     *
      * @throws TypeError
      */
     public static function stringToIntArray(string $string): array
@@ -413,10 +381,7 @@ final class Util
     /**
      * Calculate A xor B, given two binary strings of the same length.
      *
-     * @param string $left
-     * @param string $right
      *
-     * @return string
      *
      * @throws InvalidType
      */
@@ -431,15 +396,13 @@ final class Util
         if ($length < 1) {
             return '';
         }
-        return (string) ($left ^ $right);
+        return $left ^ $right;
     }
 
     /**
      * Wrap memzero() without breaking on sodium_compat
      *
-     * @param string &$var
      *
-     * @return void
      *
      * @psalm-param-out null $var
      * @psalm-suppress UnnecessaryVarAnnotation
@@ -449,7 +412,7 @@ final class Util
     {
         try {
             sodium_memzero($var);
-        } catch (Throwable $ex) {
+        } catch (Throwable) {
             // Best-effort:
             $var ^= $var;
         }

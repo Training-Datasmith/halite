@@ -33,10 +33,7 @@ final class Config extends BaseConfig
     /**
      * Get the configuration
      *
-     * @param string $header
-     * @param string $mode
      *
-     * @return self
      *
      * @throws InvalidMessage
      */
@@ -60,7 +57,8 @@ final class Config extends BaseConfig
             return new Config(
                 self::getConfigEncrypt($major, $minor)
             );
-        } elseif ($mode === 'auth') {
+        }
+        if ($mode === 'auth') {
             return new Config(
                 self::getConfigAuth($major, $minor)
             );
@@ -72,11 +70,8 @@ final class Config extends BaseConfig
     
     /**
      * Get the configuration for encrypt operations
-     * 
-     * @param int $major
-     * @param int $minor
      *
-     * @return array
+     *
      *
      * @throws InvalidMessage
      */
@@ -125,11 +120,8 @@ final class Config extends BaseConfig
     
     /**
      * Get the configuration for seal operations
-     * 
-     * @param int $major
-     * @param int $minor
      *
-     * @return array
+     *
      *
      * @throws InvalidMessage
      */

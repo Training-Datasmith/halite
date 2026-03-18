@@ -52,8 +52,6 @@ class MerkleTree
     
     /**
      * Instantiate a Merkle tree
-     * 
-     * @param Node ...$nodes
      */
     public function __construct(Node ...$nodes)
     {
@@ -65,7 +63,6 @@ class MerkleTree
      *
      * @param bool $raw - Do we want a raw string instead of a hex string?
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws TypeError
@@ -84,9 +81,7 @@ class MerkleTree
     /**
      * Merkle Trees are immutable. Return a replacement with extra nodes.
      *
-     * @param Node ...$nodes
      *
-     * @return MerkleTree
      *
      * @throws InvalidDigestLength
      */
@@ -104,9 +99,7 @@ class MerkleTree
     /**
      * Set the hash output size.
      *
-     * @param int $size
      *
-     * @return self
      *
      * @throws InvalidDigestLength
      */
@@ -138,9 +131,7 @@ class MerkleTree
     /**
      * Sets the personalization string for the Merkle root calculation
      *
-     * @param string $str
      *
-     * @return self
      */
     public function setPersonalizationString(string $str = ''): self
     {
@@ -154,7 +145,6 @@ class MerkleTree
     /**
      * Explicitly recalculate the Merkle root
      *
-     * @return self
      *
      * @throws CannotPerformOperation
      * @throws TypeError
@@ -172,7 +162,6 @@ class MerkleTree
      * leaves and branches (0x01 for the nodes, 0x00 for the branches)
      * to protect against second-preimage attacks
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws TypeError
@@ -248,9 +237,7 @@ class MerkleTree
     /**
      * Let's go ahead and round up to the nearest multiple of 2
      *
-     * @param int $inputSize
      *
-     * @return int
      */
     public static function getSizeRoundedUp(int $inputSize): int
     {

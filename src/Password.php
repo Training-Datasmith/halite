@@ -160,7 +160,6 @@ final class Password
      * Get the configuration for this version of halite
      *
      * @param string $stored   A stored password hash
-     * @return SymmetricConfig
      * @throws InvalidMessage
      * @throws \TypeError
      */

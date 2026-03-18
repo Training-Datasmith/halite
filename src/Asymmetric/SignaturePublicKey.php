@@ -47,7 +47,6 @@ final class SignaturePublicKey extends PublicKey
     /**
      * Get an encryption public key from a signing public key.
      *
-     * @return EncryptionPublicKey
      *
      * @throws SodiumException
      * @throws TypeError

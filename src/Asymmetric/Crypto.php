@@ -103,13 +103,7 @@ final class Crypto
     /**
      * Encrypt with additional associated data.
      *
-     * @param HiddenString $plaintext
-     * @param EncryptionSecretKey $ourPrivateKey
-     * @param EncryptionPublicKey $theirPublicKey
-     * @param string $additionalData
-     * @param string|bool $encoding
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws InvalidKey
@@ -185,13 +179,7 @@ final class Crypto
     /**
      * Decrypt with additional associated data.
      *
-     * @param string $ciphertext
-     * @param EncryptionSecretKey $ourPrivateKey
-     * @param EncryptionPublicKey $theirPublicKey
-     * @param string $additionalData
-     * @param string|bool $encoding
      *
-     * @return HiddenString
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -240,7 +228,6 @@ final class Crypto
      * @param bool $get_as_object             Get as a Key object?
      * @param ?Config $config                 Asymmetric Config
      *
-     * @return HiddenString|Key
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -313,7 +300,7 @@ final class Crypto
         if ($encoder) {
             return (string) $encoder($sealed);
         }
-        return (string) $sealed;
+        return $sealed;
     }
 
     /**
@@ -343,7 +330,7 @@ final class Crypto
         if ($encoder) {
             return (string) $encoder($signed);
         }
-        return (string) $signed;
+        return $signed;
     }
 
     /**
@@ -354,7 +341,6 @@ final class Crypto
      * @param PublicKey $recipientPublicKey   Public encryption key
      * @param string|bool $encoding           Which encoding scheme to use?
      *
-     * @return string
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -395,7 +381,6 @@ final class Crypto
      * @param EncryptionSecretKey $privateKey Private decryption key
      * @param string|bool $encoding           Which encoding scheme to use?
      *
-     * @return HiddenString
      *
      * @throws InvalidKey
      * @throws InvalidMessage
@@ -415,7 +400,7 @@ final class Crypto
             try {
                 /** @var string $ciphertext */
                 $ciphertext = $decoder($ciphertext);
-            } catch (RangeException $ex) {
+            } catch (RangeException) {
                 throw new InvalidMessage(
                     'Invalid character encoding'
                 );
@@ -462,7 +447,6 @@ final class Crypto
      * @param string $signature             Signature
      * @param string|bool $encoding         Which encoding scheme to use?
      *
-     * @return bool
      *
      * @throws InvalidSignature
      * @throws InvalidType
@@ -504,7 +488,6 @@ final class Crypto
      * @param SecretKey $givenSecretKey            Public encryption key
      * @param string|bool $encoding                Which encoding scheme to use?
      *
-     * @return HiddenString
      *
      * @throws CannotPerformOperation
      * @throws InvalidDigestLength
@@ -542,10 +525,7 @@ final class Crypto
     /**
      * Get the Asymmetric configuration expected for this Halite version
      *
-     * @param string $ciphertext
-     * @param string|bool $encoding
      *
-     * @return Config
      *
      * @throws InvalidMessage
      * @throws InvalidType
@@ -561,7 +541,7 @@ final class Crypto
             try {
                 /** @var string $ciphertext */
                 $ciphertext = $decoder($ciphertext);
-            } catch (RangeException $ex) {
+            } catch (RangeException) {
                 throw new InvalidMessage(
                     'Invalid character encoding'
                 );

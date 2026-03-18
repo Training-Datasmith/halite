@@ -29,9 +29,6 @@ final class Config extends BaseConfig
     /**
      * Get the configuration
      *
-     * @param string $header
-     * @param string $mode
-     * @return self
      *
      * @throws InvalidMessage
      */
@@ -64,9 +61,6 @@ final class Config extends BaseConfig
     /**
      * Get the configuration for encrypt operations
      *
-     * @param int $major
-     * @param int $minor
-     * @return array
      * @throws InvalidMessage
      */
     public static function getConfigEncrypt(int $major, int $minor): array

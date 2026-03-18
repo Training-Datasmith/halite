@@ -75,20 +75,18 @@ final class Halite
      * Select which encoding/decoding function to use.
      *
      * @internal
-     * @param string|bool $chosen
-     * @param bool $decode
      * @return ?callable
      *
      * @throws InvalidType
-     *
      * @psalm-suppress InvalidReturnStatement
      * @psalm-suppress InvalidReturnType
      */
-    public static function chooseEncoder(string|bool $chosen, bool $decode = false)
+    public static function chooseEncoder(string|bool $chosen, bool $decode = false): ?string
     {
         if ($chosen === true) {
             return null;
-        } elseif ($chosen === false) {
+        }
+        if ($chosen === false) {
             return implode(
                 '::',
                 [
@@ -96,7 +94,8 @@ final class Halite
                     $decode ? 'decode' : 'encode'
                 ]
             );
-        } elseif ($chosen === self::ENCODE_BASE32) {
+        }
+        if ($chosen === self::ENCODE_BASE32) {
             return implode(
                 '::',
                 [
@@ -104,7 +103,8 @@ final class Halite
                     $decode ? 'decode' : 'encode'
                 ]
             );
-        } elseif ($chosen === self::ENCODE_BASE32HEX) {
+        }
+        if ($chosen === self::ENCODE_BASE32HEX) {
             return implode(
                 '::',
                 [
@@ -112,7 +112,8 @@ final class Halite
                     $decode ? 'decode' : 'encode'
                 ]
             );
-        } elseif ($chosen === self::ENCODE_BASE64) {
+        }
+        if ($chosen === self::ENCODE_BASE64) {
             return implode(
                 '::',
                 [
@@ -120,7 +121,8 @@ final class Halite
                     $decode ? 'decode' : 'encode'
                 ]
             );
-        } elseif ($chosen === self::ENCODE_BASE64URLSAFE) {
+        }
+        if ($chosen === self::ENCODE_BASE64URLSAFE) {
             return implode(
                 '::',
                 [
@@ -128,7 +130,8 @@ final class Halite
                     $decode ? 'decode' : 'encode'
                 ]
             );
-        } elseif ($chosen === self::ENCODE_HEX) {
+        }
+        if ($chosen === self::ENCODE_HEX) {
             return implode(
                 '::',
                 [
@@ -146,8 +149,6 @@ final class Halite
      * Is Libsodium set up correctly? Use this to verify that you can use the
      * newer versions of Halite correctly.
      *
-     * @param bool $echo
-     * @return bool
      * @codeCoverageIgnore
      */
     public static function isLibsodiumSetupCorrectly(bool $echo = false): bool

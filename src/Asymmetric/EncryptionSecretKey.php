@@ -47,7 +47,6 @@ final class EncryptionSecretKey extends SecretKey
     /**
      * See the appropriate derived class.
      *
-     * @return EncryptionPublicKey
      *
      * @throws InvalidKey
      * @throws TypeError
