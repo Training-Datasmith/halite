@@ -8,6 +8,7 @@ use function hash_equals;
 use function is_string;
 use function json_decode;
 use function json_encode;
+use function preg_match;
 
 use ParagonIE\ConstantTime\{
     Base64UrlSafe,
@@ -146,13 +147,14 @@ final class Cookie
      * @param string $domain (defaults to NULL)
      * @param bool $secure   (defaults to TRUE)
      * @param bool $httpOnly (defaults to TRUE)
-     * @param string $sameSite (defaults to ''; PHP >= 7.3.0)
+     * @param string $sameSite (defaults to 'Lax'; PHP >= 7.3.0)
      *
      *
      * @throws InvalidDigestLength
      * @throws CannotPerformOperation
      * @throws InvalidMessage
      * @throws InvalidType
+     * @throws \InvalidArgumentException
      * @throws SodiumException
      * @throws TypeError
      * @psalm-suppress InvalidArgument  PHP version incompatibilities
@@ -168,8 +170,15 @@ final class Cookie
         string $domain = '',
         bool $secure = true,
         bool $httpOnly = true,
-        string $sameSite = ''
+        string $sameSite = 'Lax'
     ): bool {
+        // RFC 6265: cookie names must not contain separators or control characters
+        if (preg_match('/[\x00-\x1f\x7f()<>@,;:\\\\\"\/\[\]?={} \t]/', $name)) {
+            throw new \InvalidArgumentException(
+                'Invalid cookie name: contains characters forbidden by RFC 6265.'
+            );
+        }
+
         $val = Crypto::encrypt(
             new HiddenString(
                 (string) json_encode($value)
@@ -182,10 +191,8 @@ final class Cookie
             'domain' => $domain,
             'secure' => $secure,
             'httponly' => $httpOnly,
+            'samesite' => $sameSite,
         ];
-        if ($sameSite !== '') {
-            $options['samesite'] = $sameSite;
-        }
         return setcookie(
             $name,
             $val,

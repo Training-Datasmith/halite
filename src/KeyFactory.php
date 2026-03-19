@@ -912,6 +912,11 @@ final class KeyFactory
                 )
             )
         );
-        return is_int($saved);
+        if (is_int($saved)) {
+            // Restrict key file to owner read/write only (0600) to prevent world-readable key material
+            chmod($filePath, 0600);
+            return true;
+        }
+        return false;
     }
 }
