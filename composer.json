@@ -40,7 +40,7 @@
     },
     "autoload": {
         "psr-4": {
-            "ParagonIE\\Halite\\": "./src"
+            "Paragon_IE\\Halite\\": "./src"
         }
     },
     "require-dev": {
