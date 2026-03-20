@@ -1,13 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
 use function array_key_exists;
-
-use ParagonIE\Halite\Alerts\ConfigDirectiveNotFound;
-
+use Paragon_Ie\Halite\Alerts\Config_Directive_Not_Found;
 /**
  * Class Config
  *
@@ -54,7 +51,6 @@ class Config
     public function __construct(private array $config = [])
     {
     }
-
     /**
      * Getter
      *
@@ -65,6 +61,6 @@ class Config
         if (array_key_exists($key, $this->config)) {
             return $this->config[$key];
         }
-        throw new ConfigDirectiveNotFound($key);
+        throw new Config_Directive_Not_Found($key);
     }
 }

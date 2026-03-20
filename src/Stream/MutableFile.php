@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite\Stream;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Stream;
 
 use function clearstatcache;
 use function fclose;
@@ -20,20 +19,12 @@ use function is_resource;
 use function is_string;
 use function is_writable;
 use function min;
-
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    FileAccessDenied,
-    InvalidType
-};
-use ParagonIE\Halite\Contract\StreamInterface;
-
+use Paragon_Ie\Constant_Time\Binary;
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, File_Access_Denied, Invalid_Type};
+use Paragon_Ie\Halite\Contract\Stream_Interface;
 use function stream_get_meta_data;
 use function touch;
-
 use TypeError;
-
 /**
  * Class MutableFile
  *
@@ -50,21 +41,18 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class MutableFile implements StreamInterface
+class Mutable_File implements Stream_Interface
 {
     public const ALLOWED_MODES = ['r+b', 'w+b', 'cb', 'c+b', 'wb'];
-    public const CHUNK = 8192; // PHP's fread() buffer is set to 8192 by default
-    private bool $closeAfter = false;
-
+    public const CHUNK = 8192;
+    // PHP's fread() buffer is set to 8192 by default
+    private bool $close_after = false;
     /**
      * @var resource
      */
     private $fp;
-
     private int $pos;
-
     private array|bool $stat = [];
-
     /**
      * MutableFile constructor.
      * @param string|resource $file
@@ -78,52 +66,40 @@ class MutableFile implements StreamInterface
         if (is_string($file)) {
             if (!file_exists($file)) {
                 if (!is_writable(dirname($file))) {
-                    throw new FileAccessDenied(
-                        'Could not write to directory that contains file'
-                    );
+                    throw new File_Access_Denied('Could not write to directory that contains file');
                 }
-                touch($file); // Make the file exist
+                touch($file);
+                // Make the file exist
             }
             if (!is_readable($file)) {
-                throw new FileAccessDenied(
-                    'Could not open file for reading'
-                );
+                throw new File_Access_Denied('Could not open file for reading');
             }
             if (!is_writable($file)) {
-                throw new FileAccessDenied(
-                    'Could not open file for writing'
-                );
+                throw new File_Access_Denied('Could not open file for writing');
             }
             $fp = fopen($file, 'w+b');
             // @codeCoverageIgnoreStart
             if (!is_resource($fp)) {
-                throw new FileAccessDenied(
-                    'Could not open file for reading'
-                );
+                throw new File_Access_Denied('Could not open file for reading');
             }
             // @codeCoverageIgnoreEnd
             $this->fp = $fp;
-            $this->closeAfter = true;
+            $this->close_after = true;
             $this->pos = 0;
             $this->stat = fstat($this->fp);
         } elseif (is_resource($file)) {
             /** @var array<string, string> $metadata */
             $metadata = stream_get_meta_data($file);
             if (!in_array($metadata['mode'], self::ALLOWED_MODES, true)) {
-                throw new FileAccessDenied(
-                    'Resource is in ' . $metadata['mode'] . ' mode, which is not allowed.'
-                );
+                throw new File_Access_Denied('Resource is in ' . $metadata['mode'] . ' mode, which is not allowed.');
             }
             $this->fp = $file;
             $this->pos = ftell($this->fp);
             $this->stat = fstat($this->fp);
         } else {
-            throw new InvalidType(
-                'Argument 1: Expected a filename or resource'
-            );
+            throw new Invalid_Type('Argument 1: Expected a filename or resource');
         }
     }
-
     /**
      * Close the file handle.
      *
@@ -132,13 +108,12 @@ class MutableFile implements StreamInterface
      */
     public function close(): void
     {
-        if ($this->closeAfter) {
-            $this->closeAfter = false;
+        if ($this->close_after) {
+            $this->close_after = false;
             fclose($this->fp);
             clearstatcache();
         }
     }
-
     /**
      * Make sure we invoke $this->close()
      */
@@ -146,32 +121,28 @@ class MutableFile implements StreamInterface
     {
         $this->close();
     }
-
     /**
      * Where are we in the buffer?
      */
-    public function getPos(): int
+    public function get_pos(): int
     {
         return ftell($this->fp);
     }
-
     /**
      * How big is this buffer?
      */
-    public function getSize(): int
+    public function get_size(): int
     {
         $stat = fstat($this->fp);
         return $stat['size'];
     }
-
     /**
      * Get information about the stream.
      */
-    public function getStreamMetadata(): array
+    public function get_stream_metadata(): array
     {
         return stream_get_meta_data($this->fp);
     }
-
     /**
      * Read from a stream; prevent partial reads
      *
@@ -180,18 +151,18 @@ class MutableFile implements StreamInterface
      * @throws CannotPerformOperation
      * @throws FileAccessDenied
      */
-    public function readBytes(int $num, bool $skipTests = false): string
+    public function read_bytes(int $num, bool $skip_tests = false): string
     {
         // @codeCoverageIgnoreStart
         if ($num < 0) {
-            throw new CannotPerformOperation('num < 0');
+            throw new Cannot_Perform_Operation('num < 0');
         }
         // @codeCoverageIgnoreStart
         if ($num === 0) {
             return '';
         }
-        if (($this->pos + $num) > $this->stat['size']) {
-            throw new CannotPerformOperation('Out-of-bounds read');
+        if ($this->pos + $num > $this->stat['size']) {
+            throw new Cannot_Perform_Operation('Out-of-bounds read');
         }
         // @codeCoverageIgnoreEnd
         $buf = '';
@@ -202,37 +173,31 @@ class MutableFile implements StreamInterface
                 break;
                 // @codeCoverageIgnoreEnd
             }
-            $bufSize = min($remaining, self::CHUNK);
-            $read = fread($this->fp, $bufSize);
+            $buf_size = min($remaining, self::CHUNK);
+            $read = fread($this->fp, $buf_size);
             if (!is_string($read)) {
                 // @codeCoverageIgnoreStart
-                throw new FileAccessDenied(
-                    'Could not read from the file'
-                );
+                throw new File_Access_Denied('Could not read from the file');
                 // @codeCoverageIgnoreEnd
             }
             $buf .= $read;
-            $readSize = Binary::safeStrlen($read);
-            $this->pos += $readSize;
-            $remaining -= $readSize;
+            $read_size = Binary::safe_strlen($read);
+            $this->pos += $read_size;
+            $remaining -= $read_size;
         } while ($remaining > 0);
         return $buf;
     }
-
     /**
      * Get number of bytes remaining
      */
-    public function remainingBytes(): int
+    public function remaining_bytes(): int
     {
         /** @var array $stat */
         $stat = fstat($this->fp);
         /** @var int $pos */
         $pos = ftell($this->fp);
-        return PHP_INT_MAX & (
-            (int) $stat['size'] - $pos
-        );
+        return PHP_INT_MAX & (int) $stat['size'] - $pos;
     }
-
     /**
      * Set the current cursor position to the desired location
      *
@@ -247,11 +212,8 @@ class MutableFile implements StreamInterface
         if (fseek($this->fp, $position, SEEK_SET) === 0) {
             return true;
         }
-        throw new CannotPerformOperation(
-            'fseek() failed'
-        );
+        throw new Cannot_Perform_Operation('fseek() failed');
     }
-
     /**
      * Write to a stream; prevent partial writes
      *
@@ -262,15 +224,15 @@ class MutableFile implements StreamInterface
      * @throws FileAccessDenied
      * @throws TypeError
      */
-    public function writeBytes(string $buf, ?int $num = null): int
+    public function write_bytes(string $buf, ?int $num = null): int
     {
-        $bufSize = Binary::safeStrlen($buf);
-        if (!is_int($num) || $num > $bufSize) {
-            $num = $bufSize;
+        $buf_size = Binary::safe_strlen($buf);
+        if (!is_int($num) || $num > $buf_size) {
+            $num = $buf_size;
         }
         // @codeCoverageIgnoreStart
         if ($num < 0) {
-            throw new CannotPerformOperation('num < 0');
+            throw new Cannot_Perform_Operation('num < 0');
         }
         // @codeCoverageIgnoreEnd
         $remaining = $num;
@@ -283,12 +245,10 @@ class MutableFile implements StreamInterface
             $written = fwrite($this->fp, $buf, $remaining);
             if ($written === false) {
                 // @codeCoverageIgnoreStart
-                throw new FileAccessDenied(
-                    'Could not write to the file'
-                );
+                throw new File_Access_Denied('Could not write to the file');
                 // @codeCoverageIgnoreEnd
             }
-            $buf = Binary::safeSubstr($buf, $written, null);
+            $buf = Binary::safe_substr($buf, $written, null);
             $this->pos += $written;
             $this->stat = fstat($this->fp);
             $remaining -= $written;

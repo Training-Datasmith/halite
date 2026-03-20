@@ -1,26 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
 use function count;
-
 use InvalidArgumentException;
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    InvalidKey
-};
-use ParagonIE\Halite\Asymmetric\{
-    PublicKey,
-    SecretKey,
-    SignaturePublicKey,
-    SignatureSecretKey
-};
-use ParagonIE\HiddenString\HiddenString;
-use SodiumException;
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, Invalid_Key};
+use Paragon_Ie\Halite\Asymmetric\{Public_Key, Secret_Key, Signature_Public_Key, Signature_Secret_Key};
+use Paragon_Ie\Hidden_String\Hidden_String;
+use Sodium_Exception;
 use TypeError;
-
 /**
  * Class SignatureKeyPair
  *
@@ -37,18 +26,16 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-final class SignatureKeyPair extends KeyPair
+final class Signature_Key_Pair extends Key_Pair
 {
     /**
      * @var SignatureSecretKey
      */
-    protected SecretKey $secretKey;
-
+    protected Secret_Key $secret_key;
     /**
      * @var SignaturePublicKey
      */
-    protected PublicKey $publicKey;
-
+    protected Public_Key $public_key;
     /**
      * Pass it a secret key, it will automatically generate a public key
      *
@@ -67,88 +54,56 @@ final class SignatureKeyPair extends KeyPair
              * an asymmetric public key, in either order.
              */
             case 2:
-                if (!$keys[0]->isAsymmetricKey() || !$keys[1]->isAsymmetricKey()) {
-                    throw new InvalidKey(
-                        'Only keys intended for asymmetric cryptography can be used in a KeyPair object'
-                    );
+                if (!$keys[0]->is_asymmetric_key() || !$keys[1]->is_asymmetric_key()) {
+                    throw new Invalid_Key('Only keys intended for asymmetric cryptography can be used in a KeyPair object');
                 }
-                if ($keys[0]->isPublicKey()) {
-                    if ($keys[1]->isPublicKey()) {
-                        throw new InvalidKey(
-                            'Both keys cannot be public keys'
-                        );
+                if ($keys[0]->is_public_key()) {
+                    if ($keys[1]->is_public_key()) {
+                        throw new Invalid_Key('Both keys cannot be public keys');
                     }
-                    $this->setupKeyPair(
+                    $this->setup_key_pair(
                         // @codeCoverageIgnoreStart
-                        $keys[1] instanceof SignatureSecretKey
-                            ? $keys[1]
-                            : new SignatureSecretKey(
-                                new HiddenString($keys[1]->getRawKeyMaterial())
-                            )
-                        // @codeCoverageIgnoreEnd
+                        $keys[1] instanceof Signature_Secret_Key ? $keys[1] : new Signature_Secret_Key(new Hidden_String($keys[1]->get_raw_key_material()))
                     );
-                } elseif ($keys[1]->isPublicKey()) {
-                    $this->setupKeyPair(
+                } elseif ($keys[1]->is_public_key()) {
+                    $this->setup_key_pair(
                         // @codeCoverageIgnoreStart
-                        $keys[0] instanceof SignatureSecretKey
-                            ? $keys[0]
-                            : new SignatureSecretKey(
-                                new HiddenString($keys[0]->getRawKeyMaterial())
-                            )
-                        // @codeCoverageIgnoreEnd
+                        $keys[0] instanceof Signature_Secret_Key ? $keys[0] : new Signature_Secret_Key(new Hidden_String($keys[0]->get_raw_key_material()))
                     );
                 } else {
-                    throw new InvalidKey(
-                        'Both keys cannot be secret keys'
-                    );
+                    throw new Invalid_Key('Both keys cannot be secret keys');
                 }
                 break;
-                /**
-                 * If we only received one key, it must be an asymmetric secret key!
-                 */
+            /**
+             * If we only received one key, it must be an asymmetric secret key!
+             */
             case 1:
-                if (!$keys[0]->isAsymmetricKey()) {
-                    throw new InvalidKey(
-                        'Only keys intended for asymmetric cryptography can be used in a KeyPair object'
-                    );
+                if (!$keys[0]->is_asymmetric_key()) {
+                    throw new Invalid_Key('Only keys intended for asymmetric cryptography can be used in a KeyPair object');
                 }
-                if ($keys[0]->isPublicKey()) {
+                if ($keys[0]->is_public_key()) {
                     // Ever heard of the Elliptic Curve Discrete Logarithm Problem?
-                    throw new InvalidKey(
-                        'We cannot generate a valid keypair given only a public key; we can given only a secret key, however.'
-                    );
+                    throw new Invalid_Key('We cannot generate a valid keypair given only a public key; we can given only a secret key, however.');
                 }
-                $this->setupKeyPair(
+                $this->setup_key_pair(
                     // @codeCoverageIgnoreStart
-                    $keys[0] instanceof SignatureSecretKey
-                        ? $keys[0]
-                        : new SignatureSecretKey(
-                            new HiddenString($keys[0]->getRawKeyMaterial())
-                        )
-                    // @codeCoverageIgnoreEnd
+                    $keys[0] instanceof Signature_Secret_Key ? $keys[0] : new Signature_Secret_Key(new Hidden_String($keys[0]->get_raw_key_material()))
                 );
                 break;
             default:
-                throw new InvalidArgumentException(
-                    'EncryptionKeyPair expects 1 or 2 keys'
-                );
+                throw new InvalidArgumentException('EncryptionKeyPair expects 1 or 2 keys');
         }
     }
-
     /**
      *
      * @throws InvalidKey
      * @throws SodiumException
      * @throws TypeError
      */
-    public function getEncryptionKeyPair(): EncryptionKeyPair
+    public function get_encryption_key_pair(): Encryption_Key_Pair
     {
-        return new EncryptionKeyPair(
-            $this->secretKey->getEncryptionSecretKey(),
-            $this->publicKey->getEncryptionPublicKey()
-        );
+        return new Encryption_Key_Pair($this->secret_key->get_encryption_secret_key(), $this->public_key->get_encryption_public_key());
     }
-
     /**
      * Set up our key pair
      *
@@ -156,31 +111,30 @@ final class SignatureKeyPair extends KeyPair
      * @throws InvalidKey
      * @throws SodiumException
      */
-    protected function setupKeyPair(
-        #[\SensitiveParameter]
-        SignatureSecretKey $secret
-    ): void {
-        $this->secretKey = $secret;
-        $this->publicKey = $this->secretKey->derivePublicKey();
+    protected function setup_key_pair(
+        #[\Sensitive_Parameter]
+        Signature_Secret_Key $secret
+    ): void
+    {
+        $this->secret_key = $secret;
+        $this->public_key = $this->secret_key->derive_public_key();
     }
-
     /**
      * Get a Key object for the public key
      *
      * @return SignaturePublicKey
      */
-    public function getPublicKey(): \ParagonIE\Halite\Asymmetric\PublicKey
+    public function get_public_key(): \Paragon_Ie\Halite\Asymmetric\Public_Key
     {
-        return $this->publicKey;
+        return $this->public_key;
     }
-
     /**
      * Get a Key object for the public key
      *
      * @return SignatureSecretKey
      */
-    public function getSecretKey(): \ParagonIE\Halite\Asymmetric\SecretKey
+    public function get_secret_key(): \Paragon_Ie\Halite\Asymmetric\Secret_Key
     {
-        return $this->secretKey;
+        return $this->secret_key;
     }
 }

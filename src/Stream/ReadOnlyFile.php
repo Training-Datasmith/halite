@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite\Stream;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Stream;
 
 use function clearstatcache;
 use function fclose;
@@ -15,31 +14,18 @@ use function in_array;
 use function is_readable;
 use function is_resource;
 use function is_string;
-
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    FileAccessDenied,
-    FileError,
-    FileModified,
-    InvalidType,
-};
-use ParagonIE\Halite\Contract\StreamInterface;
-use ParagonIE\Halite\Key;
-
+use Paragon_Ie\Constant_Time\Binary;
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, File_Access_Denied, File_Error, File_Modified, Invalid_Type};
+use Paragon_Ie\Halite\Contract\Stream_Interface;
+use Paragon_Ie\Halite\Key;
 use const SEEK_SET;
 use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
-
 use function sodium_crypto_generichash_final;
 use function sodium_crypto_generichash_init;
 use function sodium_crypto_generichash_update;
-
-use SodiumException;
-
+use Sodium_Exception;
 use function stream_get_meta_data;
-
 use TypeError;
-
 /**
  * Class ReadOnlyFile
  *
@@ -54,23 +40,20 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class ReadOnlyFile implements StreamInterface
+class Read_Only_File implements Stream_Interface
 {
     public const ALLOWED_MODES = ['rb'];
-    public const CHUNK = 8192; // PHP's fread() buffer is set to 8192 by default
-
-    private bool $closeAfter = false;
-
+    public const CHUNK = 8192;
+    // PHP's fread() buffer is set to 8192 by default
+    private bool $close_after = false;
     /**
      * @var resource
      */
     private $fp;
-
     private string $hash = '';
     private int $pos = 0;
-    private ?string $hashKey = null;
+    private ?string $hash_key = null;
     private array $stat = [];
-
     /**
      * ReadOnlyFile constructor.
      *
@@ -87,47 +70,35 @@ class ReadOnlyFile implements StreamInterface
     {
         if (is_string($file)) {
             if (!is_readable($file)) {
-                throw new FileAccessDenied(
-                    'Could not open file for reading'
-                );
+                throw new File_Access_Denied('Could not open file for reading');
             }
             $fp = fopen($file, 'rb');
             // @codeCoverageIgnoreStart
             if (!is_resource($fp)) {
-                throw new FileAccessDenied(
-                    'Could not open file for reading'
-                );
+                throw new File_Access_Denied('Could not open file for reading');
             }
             // @codeCoverageIgnoreEnd
             $this->fp = $fp;
-
-            $this->closeAfter = true;
+            $this->close_after = true;
             $this->pos = 0;
             $this->stat = $this->fstat();
         } elseif (is_resource($file)) {
             /** @var array<string, string> $metadata */
             $metadata = stream_get_meta_data($file);
             if (!in_array($metadata['mode'], (array) static::ALLOWED_MODES, true)) {
-                throw new FileAccessDenied(
-                    'Resource is in ' . $metadata['mode'] . ' mode, which is not allowed.'
-                );
+                throw new File_Access_Denied('Resource is in ' . $metadata['mode'] . ' mode, which is not allowed.');
             }
             $this->fp = $file;
             $this->pos = ftell($this->fp);
             $this->stat = $this->fstat();
         } else {
-            throw new InvalidType(
-                'Argument 1: Expected a filename or resource'
-            );
+            throw new Invalid_Type('Argument 1: Expected a filename or resource');
         }
         // @codeCoverageIgnoreStart
-        $this->hashKey = $key instanceof \ParagonIE\Halite\Key
-            ? $key->getRawKeyMaterial()
-            : '';
+        $this->hash_key = $key instanceof \Paragon_Ie\Halite\Key ? $key->get_raw_key_material() : '';
         // @codeCoverageIgnoreEnd
-        $this->hash = $this->getHash();
+        $this->hash = $this->get_hash();
     }
-
     /**
      * Make sure we invoke $this->close()
      */
@@ -135,7 +106,6 @@ class ReadOnlyFile implements StreamInterface
     {
         $this->close();
     }
-
     /**
      * Close the file handle.
      *
@@ -143,13 +113,12 @@ class ReadOnlyFile implements StreamInterface
      */
     public function close(): void
     {
-        if ($this->closeAfter) {
-            $this->closeAfter = false;
+        if ($this->close_after) {
+            $this->close_after = false;
             fclose($this->fp);
             clearstatcache();
         }
     }
-
     /**
      * Calculate a BLAKE2b hash of a file
      *
@@ -158,29 +127,25 @@ class ReadOnlyFile implements StreamInterface
      * @throws FileModified
      * @throws FileError
      */
-    public function getHash(): string
+    public function get_hash(): string
     {
         if ($this->hash) {
-            $this->toctouTest();
+            $this->toctou_test();
             return $this->hash;
         }
         $init = $this->pos;
         fseek($this->fp, 0, SEEK_SET);
-
         // Create a hash context:
-        $h = sodium_crypto_generichash_init(
-            $this->hashKey,
-            SODIUM_CRYPTO_GENERICHASH_BYTES_MAX
-        );
+        $h = sodium_crypto_generichash_init($this->hash_key, SODIUM_CRYPTO_GENERICHASH_BYTES_MAX);
         for ($i = 0; $i < $this->stat['size']; $i += self::CHUNK) {
-            if (($i + self::CHUNK) > $this->stat['size']) {
-                $c = fread($this->fp, ((int) $this->stat['size'] - $i));
+            if ($i + self::CHUNK > $this->stat['size']) {
+                $c = fread($this->fp, (int) $this->stat['size'] - $i);
             } else {
                 $c = fread($this->fp, self::CHUNK);
             }
             if (!is_string($c)) {
                 // @codeCoverageIgnoreStart
-                throw new FileError('Could not read file');
+                throw new File_Error('Could not read file');
                 // @codeCoverageIgnoreEnd
             }
             sodium_crypto_generichash_update($h, $c);
@@ -189,31 +154,27 @@ class ReadOnlyFile implements StreamInterface
         fseek($this->fp, $init, SEEK_SET);
         return sodium_crypto_generichash_final($h);
     }
-
     /**
      * Where are we in the buffer?
      */
-    public function getPos(): int
+    public function get_pos(): int
     {
         return $this->pos;
     }
-
     /**
      * How big is this buffer?
      */
-    public function getSize(): int
+    public function get_size(): int
     {
         return (int) $this->stat['size'];
     }
-
     /**
      * Get information about the stream.
      */
-    public function getStreamMetadata(): array
+    public function get_stream_metadata(): array
     {
         return stream_get_meta_data($this->fp);
     }
-
     /**
      * Read from a stream; prevent partial reads (also uses run-time testing to
      * prevent partial reads -- you can turn this off if you need performance
@@ -229,24 +190,24 @@ class ReadOnlyFile implements StreamInterface
      * @throws FileAccessDenied
      * @throws FileModified
      */
-    public function readBytes(int $num, bool $skipTests = false): string
+    public function read_bytes(int $num, bool $skip_tests = false): string
     {
         // @codeCoverageIgnoreStart
         if ($num < 0) {
-            throw new CannotPerformOperation('num < 0');
+            throw new Cannot_Perform_Operation('num < 0');
         }
         // @codeCoverageIgnoreStart
         if ($num === 0) {
             return '';
         }
-        if (($this->pos + $num) > $this->stat['size']) {
-            throw new CannotPerformOperation('Out-of-bounds read');
+        if ($this->pos + $num > $this->stat['size']) {
+            throw new Cannot_Perform_Operation('Out-of-bounds read');
         }
         $buf = '';
         // @codeCoverageIgnoreEnd
         $remaining = $num;
-        if (!$skipTests) {
-            $this->toctouTest();
+        if (!$skip_tests) {
+            $this->toctou_test();
         }
         do {
             // @codeCoverageIgnoreStart
@@ -257,29 +218,23 @@ class ReadOnlyFile implements StreamInterface
             $read = fread($this->fp, $remaining);
             if (!is_string($read)) {
                 // @codeCoverageIgnoreStart
-                throw new FileAccessDenied(
-                    'Could not read from the file'
-                );
+                throw new File_Access_Denied('Could not read from the file');
                 // @codeCoverageIgnoreEnd
             }
             $buf .= $read;
-            $readSize = Binary::safeStrlen($read);
-            $this->pos += $readSize;
-            $remaining -= $readSize;
+            $read_size = Binary::safe_strlen($read);
+            $this->pos += $read_size;
+            $remaining -= $read_size;
         } while ($remaining > 0);
         return $buf;
     }
-
     /**
      * Get number of bytes remaining
      */
-    public function remainingBytes(): int
+    public function remaining_bytes(): int
     {
-        return PHP_INT_MAX & (
-            (int) $this->stat['size'] - $this->pos
-        );
+        return PHP_INT_MAX & (int) $this->stat['size'] - $this->pos;
     }
-
     /**
      * Set the current cursor position to the desired location
      *
@@ -294,12 +249,9 @@ class ReadOnlyFile implements StreamInterface
             return true;
         }
         // @codeCoverageIgnoreStart
-        throw new CannotPerformOperation(
-            'fseek() failed'
-        );
+        throw new Cannot_Perform_Operation('fseek() failed');
         // @codeCoverageIgnoreEnd
     }
-
     /**
      * Run-time test to prevent TOCTOU attacks (race conditions) through
      * verifying that the hash matches and the current cursor position/file
@@ -308,23 +260,18 @@ class ReadOnlyFile implements StreamInterface
      *
      * @throws FileModified
      */
-    public function toctouTest(): void
+    public function toctou_test(): void
     {
         if (ftell($this->fp) !== $this->pos) {
             // @codeCoverageIgnoreStart
-            throw new FileModified(
-                'Read-only file has been modified since it was opened for reading'
-            );
+            throw new File_Modified('Read-only file has been modified since it was opened for reading');
             // @codeCoverageIgnoreEnd
         }
         $stat = $this->fstat();
         if ($stat['size'] !== $this->stat['size']) {
-            throw new FileModified(
-                'Read-only file has been modified since it was opened for reading'
-            );
+            throw new File_Modified('Read-only file has been modified since it was opened for reading');
         }
     }
-
     /**
      * This is a meaningless operation for a Read-Only File!
      *
@@ -333,15 +280,12 @@ class ReadOnlyFile implements StreamInterface
      *
      * @throws FileAccessDenied
      */
-    public function writeBytes(string $buf, ?int $num = null): int
+    public function write_bytes(string $buf, ?int $num = null): int
     {
         unset($buf);
         unset($num);
-        throw new FileAccessDenied(
-            'This is a read-only file handle.'
-        );
+        throw new File_Access_Denied('This is a read-only file handle.');
     }
-
     /**
      * Wraps fstat to allow calculation of file-size on stream wrappers.
      */
@@ -352,12 +296,10 @@ class ReadOnlyFile implements StreamInterface
             return $stat;
         }
         // The resource is remote or a stream wrapper like php://input
-        $stat = [
-          'size' => 0,
-        ];
+        $stat = ['size' => 0];
         fseek($this->fp, 0);
         while (!feof($this->fp)) {
-            $stat['size'] += Binary::safeStrlen(fread($this->fp, self::CHUNK));
+            $stat['size'] += Binary::safe_strlen(fread($this->fp, self::CHUNK));
         }
         fseek($this->fp, $this->pos);
         return $stat;

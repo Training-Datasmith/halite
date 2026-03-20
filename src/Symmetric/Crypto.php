@@ -1,45 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite\Symmetric;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Symmetric;
 
 use Error;
-
 use function hash_equals;
 use function is_callable;
 use function is_null;
-
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\{
-    Halite,
-    Symmetric\Config as SymmetricConfig,
-    Util
-};
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    InvalidDigestLength,
-    InvalidMessage,
-    InvalidSignature,
-    InvalidType
-};
-use ParagonIE\HiddenString\HiddenString;
-
+use Paragon_Ie\Constant_Time\Binary;
+use Paragon_Ie\Halite\{Halite, Symmetric\Config as SymmetricConfig, Util};
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, Invalid_Digest_Length, Invalid_Message, Invalid_Signature, Invalid_Type};
+use Paragon_Ie\Hidden_String\Hidden_String;
 use function random_bytes;
-
 use RangeException;
-
 use function sodium_crypto_generichash;
-
 use const SODIUM_CRYPTO_STREAM_NONCEBYTES;
-
 use function sodium_crypto_stream_xchacha20_xor;
 use function sodium_crypto_stream_xor;
-
-use SodiumException;
+use Sodium_Exception;
 use Throwable;
 use TypeError;
-
 /**
  * Class Crypto
  *
@@ -68,7 +48,6 @@ final class Crypto
     {
         throw new Error('Do not instantiate');
     }
-
     /**
      * Authenticate a string
      *
@@ -79,27 +58,16 @@ final class Crypto
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function authenticate(
-        string $message,
-        AuthenticationKey $secretKey,
-        bool|string $encoding = Halite::ENCODE_BASE64URLSAFE
-    ): string {
-        $config = SymmetricConfig::getConfig(
-            Halite::HALITE_VERSION,
-            'auth'
-        );
-        $mac = self::calculateMAC(
-            $message,
-            $secretKey->getRawKeyMaterial(),
-            $config
-        );
-        $encoder = Halite::chooseEncoder($encoding);
+    public static function authenticate(string $message, Authentication_Key $secret_key, bool|string $encoding = Halite::ENCODE_BASE64URLSAFE): string
+    {
+        $config = Symmetric_Config::get_config(Halite::HALITE_VERSION, 'auth');
+        $mac = self::calculate_mac($message, $secret_key->get_raw_key_material(), $config);
+        $encoder = Halite::choose_encoder($encoding);
         if ($encoder) {
             return (string) $encoder($mac);
         }
         return $mac;
     }
-
     /**
      * Decrypt a message using the Halite encryption protocol
      *
@@ -113,19 +81,10 @@ final class Crypto
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function decrypt(
-        string $ciphertext,
-        EncryptionKey $secretKey,
-        bool|string $encoding = Halite::ENCODE_BASE64URLSAFE
-    ): HiddenString {
-        return self::decryptWithAD(
-            $ciphertext,
-            $secretKey,
-            '',
-            $encoding
-        );
+    public static function decrypt(string $ciphertext, Encryption_Key $secret_key, bool|string $encoding = Halite::ENCODE_BASE64URLSAFE): Hidden_String
+    {
+        return self::decrypt_with_ad($ciphertext, $secret_key, '', $encoding);
     }
-
     /**
      * Decrypt a message using the Halite encryption protocol
      *
@@ -147,13 +106,9 @@ final class Crypto
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function decryptWithAD(
-        string $ciphertext,
-        EncryptionKey $secretKey,
-        string $additionalData = '',
-        bool|string $encoding = Halite::ENCODE_BASE64URLSAFE
-    ): HiddenString {
-        $decoder = Halite::chooseEncoder($encoding, true);
+    public static function decrypt_with_ad(string $ciphertext, Encryption_Key $secret_key, string $additional_data = '', bool|string $encoding = Halite::ENCODE_BASE64URLSAFE): Hidden_String
+    {
+        $decoder = Halite::choose_encoder($encoding, true);
         if (is_callable($decoder)) {
             // We were given encoded data:
             // @codeCoverageIgnoreStart
@@ -161,9 +116,7 @@ final class Crypto
                 /** @var string $ciphertext */
                 $ciphertext = $decoder($ciphertext);
             } catch (RangeException) {
-                throw new InvalidMessage(
-                    'Invalid character encoding'
-                );
+                throw new Invalid_Message('Invalid character encoding');
             }
             // @codeCoverageIgnoreEnd
         }
@@ -175,69 +128,46 @@ final class Crypto
          * @var string $encrypted
          * @var string $auth
          */
-        [
-            $version,
-            $config,
-            $salt,
-            $nonce,
-            $encrypted,
-            $auth
-        ] = self::unpackMessageForDecryption($ciphertext);
-
+        [$version, $config, $salt, $nonce, $encrypted, $auth] = self::unpack_message_for_decryption($ciphertext);
         /* Split our key into two keys: One for encryption, the other for
-           authentication. By using separate keys, we can reasonably dismiss
-           likely cross-protocol attacks.
-
-           This uses salted HKDF to split the keys, which is why we need the
-           salt in the first place. */
+                   authentication. By using separate keys, we can reasonably dismiss
+                   likely cross-protocol attacks.
+        
+                   This uses salted HKDF to split the keys, which is why we need the
+                   salt in the first place. */
         /** @var array<int, string> $split */
-        $split = Util::splitKeys($secretKey, $salt, $config);
-        $encKey = $split[0];
-        $authKey = $split[1];
-
+        $split = Util::split_keys($secret_key, $salt, $config);
+        $enc_key = $split[0];
+        $auth_key = $split[1];
         // Check the MAC first
         if ($config->USE_PAE) {
-            $verified = self::verifyMAC(
-                $auth,
-                Util::PAE($version, $salt, $nonce, $additionalData, $encrypted),
-                $authKey,
-                $config
-            );
+            $verified = self::verify_mac($auth, Util::PAE($version, $salt, $nonce, $additional_data, $encrypted), $auth_key, $config);
         } else {
-            $verified = self::verifyMAC(
+            $verified = self::verify_mac(
                 // @codeCoverageIgnoreStart
                 $auth,
-                $version .
-                    $salt .
-                    $nonce .
-                    $additionalData .
-                    $encrypted,
+                $version . $salt . $nonce . $additional_data . $encrypted,
                 // @codeCoverageIgnoreEnd
-                $authKey,
+                $auth_key,
                 $config
             );
         }
-
         if (!$verified) {
-            throw new InvalidMessage(
-                'Invalid message authentication code'
-            );
+            throw new Invalid_Message('Invalid message authentication code');
         }
         Util::memzero($salt);
-        Util::memzero($authKey);
-
+        Util::memzero($auth_key);
         // crypto_stream_xor() can be used to encrypt and decrypt
         if ($config->ENC_ALGO === 'XChaCha20') {
-            $plaintext = sodium_crypto_stream_xchacha20_xor($encrypted, $nonce, $encKey);
+            $plaintext = sodium_crypto_stream_xchacha20_xor($encrypted, $nonce, $enc_key);
         } else {
-            $plaintext = sodium_crypto_stream_xor($encrypted, $nonce, $encKey);
+            $plaintext = sodium_crypto_stream_xor($encrypted, $nonce, $enc_key);
         }
         Util::memzero($encrypted);
         Util::memzero($nonce);
-        Util::memzero($encKey);
-        return new HiddenString($plaintext);
+        Util::memzero($enc_key);
+        return new Hidden_String($plaintext);
     }
-
     /**
      * Encrypt a message using the Halite encryption protocol
      *
@@ -250,19 +180,10 @@ final class Crypto
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function encrypt(
-        HiddenString $plaintext,
-        EncryptionKey $secretKey,
-        bool|string $encoding = Halite::ENCODE_BASE64URLSAFE
-    ): string {
-        return self::encryptWithAD(
-            $plaintext,
-            $secretKey,
-            '',
-            $encoding
-        );
+    public static function encrypt(Hidden_String $plaintext, Encryption_Key $secret_key, bool|string $encoding = Halite::ENCODE_BASE64URLSAFE): string
+    {
+        return self::encrypt_with_ad($plaintext, $secret_key, '', $encoding);
     }
-
     /**
      * Encrypt a message using the Halite encryption protocol
      *
@@ -282,86 +203,51 @@ final class Crypto
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function encryptWithAD(
-        HiddenString $plaintext,
-        EncryptionKey $secretKey,
-        string $additionalData = '',
-        bool|string $encoding = Halite::ENCODE_BASE64URLSAFE
-    ): string {
-        $config = SymmetricConfig::getConfig(Halite::HALITE_VERSION, 'encrypt');
-
+    public static function encrypt_with_ad(Hidden_String $plaintext, Encryption_Key $secret_key, string $additional_data = '', bool|string $encoding = Halite::ENCODE_BASE64URLSAFE): string
+    {
+        $config = Symmetric_Config::get_config(Halite::HALITE_VERSION, 'encrypt');
         // Generate a nonce and HKDF salt:
         // @codeCoverageIgnoreStart
         try {
             $nonce = random_bytes(\SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
             $salt = random_bytes((int) $config->HKDF_SALT_LEN);
         } catch (Throwable $ex) {
-            throw new CannotPerformOperation($ex->getMessage());
+            throw new Cannot_Perform_Operation($ex->get_message());
         }
         // @codeCoverageIgnoreEnd
-
         /* Split our key into two keys: One for encryption, the other for
-           authentication. By using separate keys, we can reasonably dismiss
-           likely cross-protocol attacks.
-
-           This uses salted HKDF to split the keys, which is why we need the
-           salt in the first place. */
-        [$encKey, $authKey] = Util::splitKeys($secretKey, $salt, $config);
-
+                   authentication. By using separate keys, we can reasonably dismiss
+                   likely cross-protocol attacks.
+        
+                   This uses salted HKDF to split the keys, which is why we need the
+                   salt in the first place. */
+        [$enc_key, $auth_key] = Util::split_keys($secret_key, $salt, $config);
         // Encrypt our message with the encryption key:
-
         if ($config->ENC_ALGO === 'XChaCha20') {
-            $encrypted = sodium_crypto_stream_xchacha20_xor(
-                $plaintext->getString(),
-                $nonce,
-                $encKey
-            );
+            $encrypted = sodium_crypto_stream_xchacha20_xor($plaintext->get_string(), $nonce, $enc_key);
         } else {
-            $encrypted = sodium_crypto_stream_xor(
-                $plaintext->getString(),
-                $nonce,
-                $encKey
-            );
+            $encrypted = sodium_crypto_stream_xor($plaintext->get_string(), $nonce, $enc_key);
         }
-        Util::memzero($encKey);
-
+        Util::memzero($enc_key);
         // Calculate an authentication tag:
         if ($config->USE_PAE) {
-            $auth = self::calculateMAC(
-                Util::PAE(
-                    Halite::HALITE_VERSION,
-                    $salt,
-                    $nonce,
-                    $additionalData,
-                    $encrypted
-                ),
-                $authKey,
-                $config
-            );
+            $auth = self::calculate_mac(Util::PAE(Halite::HALITE_VERSION, $salt, $nonce, $additional_data, $encrypted), $auth_key, $config);
         } else {
-            $auth = self::calculateMAC(
-                Halite::HALITE_VERSION . $salt . $nonce . $additionalData . $encrypted,
-                $authKey,
-                $config
-            );
+            $auth = self::calculate_mac(Halite::HALITE_VERSION . $salt . $nonce . $additional_data . $encrypted, $auth_key, $config);
         }
-        Util::memzero($authKey);
-
+        Util::memzero($auth_key);
         $message = Halite::HALITE_VERSION . $salt . $nonce . $encrypted . $auth;
-
         // Wipe every superfluous piece of data from memory
         Util::memzero($nonce);
         Util::memzero($salt);
         Util::memzero($encrypted);
         Util::memzero($auth);
-
-        $encoder = Halite::chooseEncoder($encoding);
+        $encoder = Halite::choose_encoder($encoding);
         if ($encoder) {
             return (string) $encoder($message);
         }
         return $message;
     }
-
     /**
      * Unpack a message string into an array (assigned to variables via list()).
      *
@@ -374,76 +260,44 @@ final class Crypto
      * @throws TypeError
      * @codeCoverageIgnore
      */
-    public static function unpackMessageForDecryption(string $ciphertext): array
+    public static function unpack_message_for_decryption(string $ciphertext): array
     {
-        $length = Binary::safeStrlen($ciphertext);
-
+        $length = Binary::safe_strlen($ciphertext);
         // Fail fast on invalid messages
         if ($length < Halite::VERSION_TAG_LEN) {
-            throw new InvalidMessage(
-                'Message is too short'
-            );
+            throw new Invalid_Message('Message is too short');
         }
-
         // The first 4 bytes are reserved for the version size
-        $version = Binary::safeSubstr(
-            $ciphertext,
-            0,
-            Halite::VERSION_TAG_LEN
-        );
-        $config = SymmetricConfig::getConfig($version, 'encrypt');
-
+        $version = Binary::safe_substr($ciphertext, 0, Halite::VERSION_TAG_LEN);
+        $config = Symmetric_Config::get_config($version, 'encrypt');
         if ($length < $config->SHORTEST_CIPHERTEXT_LENGTH) {
-            throw new InvalidMessage(
-                'Message is too short'
-            );
+            throw new Invalid_Message('Message is too short');
         }
-
         // The salt is used for key splitting (via HKDF)
-        $salt = Binary::safeSubstr(
-            $ciphertext,
-            Halite::VERSION_TAG_LEN,
-            (int) $config->HKDF_SALT_LEN
-        );
-
+        $salt = Binary::safe_substr($ciphertext, Halite::VERSION_TAG_LEN, (int) $config->HKDF_SALT_LEN);
         // This is the nonce (we authenticated it):
-        $nonce = Binary::safeSubstr(
+        $nonce = Binary::safe_substr(
             $ciphertext,
             // 36:
             Halite::VERSION_TAG_LEN + (int) $config->HKDF_SALT_LEN,
             // 24:
             SODIUM_CRYPTO_STREAM_NONCEBYTES
         );
-
         // This is the crypto_stream_xor()ed ciphertext
-        $encrypted = Binary::safeSubstr(
+        $encrypted = Binary::safe_substr(
             $ciphertext,
             // 60:
-            Halite::VERSION_TAG_LEN +
-            (int) $config->HKDF_SALT_LEN +
-            SODIUM_CRYPTO_STREAM_NONCEBYTES,
+            Halite::VERSION_TAG_LEN + (int) $config->HKDF_SALT_LEN + SODIUM_CRYPTO_STREAM_NONCEBYTES,
             // $length - 124
-            $length - (
-                Halite::VERSION_TAG_LEN +
-                (int) $config->HKDF_SALT_LEN +
-                SODIUM_CRYPTO_STREAM_NONCEBYTES +
-                (int) $config->MAC_SIZE
-            )
+            $length - (Halite::VERSION_TAG_LEN + (int) $config->HKDF_SALT_LEN + SODIUM_CRYPTO_STREAM_NONCEBYTES + (int) $config->MAC_SIZE)
         );
-
         // $auth is the last 32 bytes
-        $auth = Binary::safeSubstr(
-            $ciphertext,
-            $length - (int) $config->MAC_SIZE
-        );
-
+        $auth = Binary::safe_substr($ciphertext, $length - (int) $config->MAC_SIZE);
         // We don't need this anymore.
         Util::memzero($ciphertext);
-
         // Now we return the pieces in a specific order:
         return [$version, $config, $salt, $nonce, $encrypted, $auth];
     }
-
     /**
      * Verify the authenticity of a message, given a shared MAC key
      *
@@ -455,14 +309,9 @@ final class Crypto
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function verify(
-        string $message,
-        AuthenticationKey $secretKey,
-        string $mac,
-        string|bool $encoding = Halite::ENCODE_BASE64URLSAFE,
-        ?SymmetricConfig $config = null
-    ): bool {
-        $decoder = Halite::chooseEncoder($encoding, true);
+    public static function verify(string $message, Authentication_Key $secret_key, string $mac, string|bool $encoding = Halite::ENCODE_BASE64URLSAFE, ?Symmetric_Config $config = null): bool
+    {
+        $decoder = Halite::choose_encoder($encoding, true);
         if ($decoder) {
             // We were given hex data:
             /** @var string $mac */
@@ -470,25 +319,16 @@ final class Crypto
         }
         if (is_null($config)) {
             // Default to the current version
-            $config = SymmetricConfig::getConfig(
-                Halite::HALITE_VERSION,
-                'auth'
-            );
+            $config = Symmetric_Config::get_config(Halite::HALITE_VERSION, 'auth');
         }
         try {
-            return self::verifyMAC(
-                $mac,
-                $message,
-                $secretKey->getRawKeyMaterial(),
-                $config
-            );
+            return self::verify_mac($mac, $message, $secret_key->get_raw_key_material(), $config);
             // @codeCoverageIgnoreStart
-        } catch (InvalidMessage) {
+        } catch (Invalid_Message) {
             return false;
             // @codeCoverageIgnoreEnd
         }
     }
-
     /**
      * Calculate a MAC. This is used internally.
      *
@@ -497,25 +337,15 @@ final class Crypto
      * @throws InvalidMessage
      * @throws SodiumException
      */
-    protected static function calculateMAC(
-        string $message,
-        string $authKey,
-        SymmetricConfig $config
-    ): string {
+    protected static function calculate_mac(string $message, string $auth_key, Symmetric_Config $config): string
+    {
         if ($config->MAC_ALGO === 'BLAKE2b') {
-            return sodium_crypto_generichash(
-                $message,
-                $authKey,
-                (int) $config->MAC_SIZE
-            );
+            return sodium_crypto_generichash($message, $auth_key, (int) $config->MAC_SIZE);
         }
         // @codeCoverageIgnoreStart
-        throw new InvalidMessage(
-            'Invalid Halite version'
-        );
+        throw new Invalid_Message('Invalid Halite version');
         // @codeCoverageIgnoreEnd
     }
-
     /**
      * Verify a Message Authentication Code (MAC) of a message, with a shared
      * key.
@@ -530,33 +360,21 @@ final class Crypto
      * @throws InvalidSignature
      * @throws SodiumException
      */
-    protected static function verifyMAC(
-        string $mac,
-        string $message,
-        string $authKey,
-        SymmetricConfig $config
-    ): bool {
-        if (Binary::safeStrlen($mac) !== $config->MAC_SIZE) {
+    protected static function verify_mac(string $mac, string $message, string $auth_key, Symmetric_Config $config): bool
+    {
+        if (Binary::safe_strlen($mac) !== $config->MAC_SIZE) {
             // @codeCoverageIgnoreStart
-            throw new InvalidSignature(
-                'Argument 1: Message Authentication Code is not the correct length; is it encoded?'
-            );
+            throw new Invalid_Signature('Argument 1: Message Authentication Code is not the correct length; is it encoded?');
             // @codeCoverageIgnoreEnd
         }
         if ($config->MAC_ALGO === 'BLAKE2b') {
-            $calc = sodium_crypto_generichash(
-                $message,
-                $authKey,
-                (int) $config->MAC_SIZE
-            );
+            $calc = sodium_crypto_generichash($message, $auth_key, (int) $config->MAC_SIZE);
             $res = hash_equals($mac, $calc);
             Util::memzero($calc);
             return $res;
         }
         // @codeCoverageIgnoreStart
-        throw new InvalidMessage(
-            'Invalid Halite version'
-        );
+        throw new Invalid_Message('Invalid Halite version');
         // @codeCoverageIgnoreEnd
     }
 }

@@ -1,17 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Asymmetric;
 
-namespace ParagonIE\Halite\Asymmetric;
-
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\{
-    Config as BaseConfig,
-    Halite,
-    Util
-};
-use ParagonIE\Halite\Alerts\InvalidMessage;
-
+use Paragon_Ie\Constant_Time\Binary;
+use Paragon_Ie\Halite\{Config as BaseConfig, Halite, Util};
+use Paragon_Ie\Halite\Alerts\Invalid_Message;
 /**
  * Class Config
  *
@@ -26,7 +20,7 @@ use ParagonIE\Halite\Alerts\InvalidMessage;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-final class Config extends BaseConfig
+final class Config extends Base_Config
 {
     /**
      * Get the configuration
@@ -34,61 +28,42 @@ final class Config extends BaseConfig
      *
      * @throws InvalidMessage
      */
-    public static function getConfig(
-        string $header,
-        string $mode = 'encrypt'
-    ): self {
-        if (Binary::safeStrlen($header) < Halite::VERSION_TAG_LEN) {
-            throw new InvalidMessage(
-                'Invalid version tag'
-            );
+    public static function get_config(string $header, string $mode = 'encrypt'): self
+    {
+        if (Binary::safe_strlen($header) < Halite::VERSION_TAG_LEN) {
+            throw new Invalid_Message('Invalid version tag');
         }
         /*
          * We can safely omit the check on the first two bytes since
          * this is checked elsewhere. This is just a best-effort to
          * obtain the asymmetric configuration
          */
-        $major = Util::chrToInt($header[2]);
-        $minor = Util::chrToInt($header[3]);
+        $major = Util::chr_to_int($header[2]);
+        $minor = Util::chr_to_int($header[3]);
         if ($mode === 'encrypt') {
-            return new Config(
-                self::getConfigEncrypt($major, $minor)
-            );
+            return new Config(self::get_config_encrypt($major, $minor));
         }
-        throw new InvalidMessage(
-            'Invalid configuration mode: '.$mode
-        );
+        throw new Invalid_Message('Invalid configuration mode: ' . $mode);
     }
-
     /**
      * Get the configuration for encrypt operations
      *
      * @throws InvalidMessage
      */
-    public static function getConfigEncrypt(int $major, int $minor): array
+    public static function get_config_encrypt(int $major, int $minor): array
     {
         if ($major === 5) {
             switch ($minor) {
                 case 0:
-                    return [
-                        'ENCODING' => Halite::ENCODE_BASE64URLSAFE,
-                        'HASH_DOMAIN_SEPARATION' => 'HaliteVersion5X25519SharedSecret',
-                        'HASH_SCALARMULT' => true,
-                    ];
+                    return ['ENCODING' => Halite::ENCODE_BASE64URLSAFE, 'HASH_DOMAIN_SEPARATION' => 'HaliteVersion5X25519SharedSecret', 'HASH_SCALARMULT' => true];
             }
         }
         if ($major === 4 || $major === 3) {
             switch ($minor) {
                 case 0:
-                    return [
-                        'ENCODING' => Halite::ENCODE_BASE64URLSAFE,
-                        'HASH_DOMAIN_SEPARATION' => '',
-                        'HASH_SCALARMULT' => false,
-                    ];
+                    return ['ENCODING' => Halite::ENCODE_BASE64URLSAFE, 'HASH_DOMAIN_SEPARATION' => '', 'HASH_SCALARMULT' => false];
             }
         }
-        throw new InvalidMessage(
-            'Invalid version tag'
-        );
+        throw new Invalid_Message('Invalid version tag');
     }
 }

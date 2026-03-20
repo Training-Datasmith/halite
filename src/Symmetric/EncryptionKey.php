@@ -1,19 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Symmetric;
 
-namespace ParagonIE\Halite\Symmetric;
-
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\InvalidKey;
-use ParagonIE\HiddenString\HiddenString;
-
+use Paragon_Ie\Constant_Time\Binary;
+use Paragon_Ie\Halite\Alerts\Invalid_Key;
+use Paragon_Ie\Hidden_String\Hidden_String;
 use const SODIUM_CRYPTO_STREAM_KEYBYTES;
-
 use function sprintf;
-
 use TypeError;
-
 /**
  * Class EncryptionKey
  * @package ParagonIE\Halite\Symmetric
@@ -22,7 +17,7 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-final class EncryptionKey extends SecretKey
+final class Encryption_Key extends Secret_Key
 {
     /**
      * EncryptionKey constructor.
@@ -31,17 +26,13 @@ final class EncryptionKey extends SecretKey
      * @throws TypeError
      */
     public function __construct(
-        #[\SensitiveParameter]
-        HiddenString $keyMaterial
-    ) {
-        if (Binary::safeStrlen($keyMaterial->getString()) !== SODIUM_CRYPTO_STREAM_KEYBYTES) {
-            throw new InvalidKey(
-                sprintf(
-                    'Encryption key must be CRYPTO_STREAM_KEYBYTES (%d) bytes long',
-                    SODIUM_CRYPTO_STREAM_KEYBYTES
-                )
-            );
+        #[\Sensitive_Parameter]
+        Hidden_String $key_material
+    )
+    {
+        if (Binary::safe_strlen($key_material->get_string()) !== SODIUM_CRYPTO_STREAM_KEYBYTES) {
+            throw new Invalid_Key(sprintf('Encryption key must be CRYPTO_STREAM_KEYBYTES (%d) bytes long', SODIUM_CRYPTO_STREAM_KEYBYTES));
         }
-        parent::__construct($keyMaterial);
+        parent::__construct($key_material);
     }
 }

@@ -1,19 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite\Structure;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Structure;
 
 use function count;
-
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    InvalidDigestLength
-};
-use ParagonIE\Halite\Util;
-use SodiumException;
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, Invalid_Digest_Length};
+use Paragon_Ie\Halite\Util;
+use Sodium_Exception;
 use TypeError;
-
 /**
  * Class TrimmedMerkleTree
  *
@@ -34,7 +28,7 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class TrimmedMerkleTree extends MerkleTree
+class Trimmed_Merkle_Tree extends Merkle_Tree
 {
     /**
      * Calculate the Merkle root, taking care to distinguish between
@@ -47,7 +41,7 @@ class TrimmedMerkleTree extends MerkleTree
      * @throws TypeError
      * @psalm-suppress EmptyArrayAccess Psalm is misreading array elements
      */
-    protected function calculateRoot(): string
+    protected function calculate_root(): string
     {
         $size = count($this->nodes);
         if ($size < 1) {
@@ -57,15 +51,8 @@ class TrimmedMerkleTree extends MerkleTree
         $hash = [];
         // Population (Use self::MERKLE_LEAF as a prefix)
         for ($i = 0; $i < $size; ++$i) {
-            $hash[$i] = self::MERKLE_LEAF .
-                $this->personalization .
-                $this->nodes[$i]->getHash(
-                    true,
-                    $this->outputSize,
-                    $this->personalization
-                );
+            $hash[$i] = self::MERKLE_LEAF . $this->personalization . $this->nodes[$i]->get_hash(true, $this->output_size, $this->personalization);
         }
-
         // Calculation (Use self::MERKLE_BRANCH as a prefix)
         do {
             /** @var array<int, string> $tmp */
@@ -75,25 +62,17 @@ class TrimmedMerkleTree extends MerkleTree
                 if (empty($hash[$i + 1])) {
                     $tmp[$j] = $hash[$i];
                 } elseif (!empty($hash[$i])) {
-                    $tmp[$j] = Util::raw_hash(
-                        self::MERKLE_BRANCH .
-                        $this->personalization .
-                        $hash[$i] .
-                        $hash[$i + 1],
-                        $this->outputSize
-                    );
+                    $tmp[$j] = Util::raw_hash(self::MERKLE_BRANCH . $this->personalization . $hash[$i] . $hash[$i + 1], $this->output_size);
                 }
                 ++$j;
             }
             $hash = $tmp;
             $size >>= 1;
         } while ($size > 1);
-
         // We should only have one value left:
-        $this->rootCalculated = true;
+        $this->root_calculated = true;
         return (string) array_shift($hash);
     }
-
     /**
      * Merkle Trees are immutable. Return a replacement with extra nodes.
      *
@@ -101,15 +80,15 @@ class TrimmedMerkleTree extends MerkleTree
      *
      * @throws InvalidDigestLength
      */
-    public function getExpandedTree(Node ...$nodes): TrimmedMerkleTree
+    public function get_expanded_tree(Node ...$nodes): Trimmed_Merkle_Tree
     {
-        $thisTree = $this->nodes;
+        $this_tree = $this->nodes;
         foreach ($nodes as $node) {
-            $thisTree [] = $node;
+            $this_tree[] = $node;
         }
-        $new = new TrimmedMerkleTree(...$thisTree);
-        $new->setHashSize($this->outputSize);
-        $new->setPersonalizationString($this->personalization);
+        $new = new Trimmed_Merkle_Tree(...$this_tree);
+        $new->set_hash_size($this->output_size);
+        $new->set_personalization_string($this->personalization);
         return $new;
     }
 }

@@ -1,14 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Contract;
 
-namespace ParagonIE\Halite\Contract;
-
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    FileAccessDenied
-};
-
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, File_Access_Denied};
 /**
  * Interface StreamInterface
  *
@@ -25,41 +20,36 @@ use ParagonIE\Halite\Alerts\{
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-interface StreamInterface
+interface Stream_Interface
 {
     /**
      * Where are we in the buffer?
      */
-    public function getPos(): int;
-
+    public function get_pos(): int;
     /**
      * How big is this buffer?
      */
-    public function getSize(): int;
-
+    public function get_size(): int;
     /**
      * Get information about the stream.
      */
-    public function getStreamMetadata(): array;
-
+    public function get_stream_metadata(): array;
     /**
      * Read from a stream; prevent partial reads
      *
      * @throws FileAccessDenied
      * @throws CannotPerformOperation
      */
-    public function readBytes(int $num, bool $skipTests = false): string;
-
+    public function read_bytes(int $num, bool $skip_tests = false): string;
     /**
      * How many bytes are left between here and the end of the stream?
      */
-    public function remainingBytes(): int;
-
+    public function remaining_bytes(): int;
     /**
      * Write to a stream; prevent partial writes
      *
      * @param ?int $num (number of bytes)
      * @throws FileAccessDenied
      */
-    public function writeBytes(string $buf, ?int $num = null): int;
+    public function write_bytes(string $buf, ?int $num = null): int;
 }

@@ -1,16 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
-namespace ParagonIE\Halite;
-
-use ParagonIE\Halite\Alerts\{
-    CannotCloneKey,
-    CannotSerializeKey
-};
-use ParagonIE\HiddenString\HiddenString;
+use Paragon_Ie\Halite\Alerts\{Cannot_Clone_Key, Cannot_Serialize_Key};
+use Paragon_Ie\Hidden_String\Hidden_String;
 use TypeError;
-
 /**
  * Class Key
  *
@@ -29,11 +24,10 @@ use TypeError;
  */
 class Key implements \Stringable
 {
-    protected bool $isPublicKey = false;
-    protected bool $isSigningKey = false;
-    protected bool $isAsymmetricKey = false;
-    private string $keyMaterial = '';
-
+    protected bool $is_public_key = false;
+    protected bool $is_signing_key = false;
+    protected bool $is_asymmetric_key = false;
+    private string $key_material = '';
     /**
      * Don't let this ever succeed
      *
@@ -42,20 +36,18 @@ class Key implements \Stringable
      */
     public function __clone()
     {
-        throw new CannotCloneKey();
+        throw new Cannot_Clone_Key();
     }
-
     /**
      * You probably should not be using this directly.
      *
      * @param HiddenString $keyMaterial - The actual key data
      * @throws \TypeError
      */
-    public function __construct(HiddenString $keyMaterial)
+    public function __construct(Hidden_String $key_material)
     {
-        $this->keyMaterial = Util::safeStrcpy($keyMaterial->getString());
+        $this->key_material = Util::safe_strcpy($key_material->get_string());
     }
-
     /**
      * Hide this from var_dump(), etc.
      *
@@ -65,24 +57,18 @@ class Key implements \Stringable
     public function __debugInfo()
     {
         // We exclude $this->keyMaterial
-        return [
-            'isAsymmetricKey' => $this->isAsymmetricKey,
-            'isPublicKey' => $this->isPublicKey,
-            'isSigningKey' => $this->isSigningKey,
-        ];
+        return ['isAsymmetricKey' => $this->is_asymmetric_key, 'isPublicKey' => $this->is_public_key, 'isSigningKey' => $this->is_signing_key];
     }
-
     /**
      * Make sure you wipe the key from memory on destruction
      */
     public function __destruct()
     {
-        if (!$this->isPublicKey) {
-            Util::memzero($this->keyMaterial);
-            $this->keyMaterial = '';
+        if (!$this->is_public_key) {
+            Util::memzero($this->key_material);
+            $this->key_material = '';
         }
     }
-
     /**
      * Don't allow this object to ever be serialized
      * @throws CannotSerializeKey
@@ -90,9 +76,8 @@ class Key implements \Stringable
      */
     public function __sleep()
     {
-        throw new CannotSerializeKey();
+        throw new Cannot_Serialize_Key();
     }
-
     /**
      * Don't allow this object to ever be unserialized
      * @throws CannotSerializeKey
@@ -100,9 +85,8 @@ class Key implements \Stringable
      */
     public function __wakeup()
     {
-        throw new CannotSerializeKey();
+        throw new Cannot_Serialize_Key();
     }
-
     /**
      * Get public keys
      *
@@ -110,59 +94,53 @@ class Key implements \Stringable
      */
     public function __toString(): string
     {
-        if ($this->isPublicKey) {
-            return $this->keyMaterial;
+        if ($this->is_public_key) {
+            return $this->key_material;
         }
         return '';
     }
-
     /**
      * Get the actual key material
      *
      * @throws TypeError
      */
-    public function getRawKeyMaterial(): string
+    public function get_raw_key_material(): string
     {
-        return Util::safeStrcpy($this->keyMaterial);
+        return Util::safe_strcpy($this->key_material);
     }
-
     /**
      * Is this a part of a key pair?
      */
-    public function isAsymmetricKey(): bool
+    public function is_asymmetric_key(): bool
     {
-        return $this->isAsymmetricKey;
+        return $this->is_asymmetric_key;
     }
-
     /**
      * Is this a signing key?
      */
-    public function isEncryptionKey(): bool
+    public function is_encryption_key(): bool
     {
-        return !$this->isSigningKey;
+        return !$this->is_signing_key;
     }
-
     /**
      * Is this a public key?
      */
-    public function isPublicKey(): bool
+    public function is_public_key(): bool
     {
-        return $this->isPublicKey;
+        return $this->is_public_key;
     }
-
     /**
      * Is this a secret key?
      */
-    public function isSecretKey(): bool
+    public function is_secret_key(): bool
     {
-        return !$this->isPublicKey;
+        return !$this->is_public_key;
     }
-
     /**
      * Is this a signing key?
      */
-    public function isSigningKey(): bool
+    public function is_signing_key(): bool
     {
-        return $this->isSigningKey;
+        return $this->is_signing_key;
     }
 }

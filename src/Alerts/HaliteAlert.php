@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite\Alerts;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Alerts;
 
 use Exception;
-
 /**
  * Class HaliteAlert
  *
@@ -15,6 +13,6 @@ use Exception;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class HaliteAlert extends Exception implements HaliteAlertInterface
+class Halite_Alert extends Exception implements Halite_Alert_Interface
 {
 }

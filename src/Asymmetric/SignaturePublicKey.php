@@ -1,23 +1,16 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Asymmetric;
 
-namespace ParagonIE\Halite\Asymmetric;
-
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\InvalidKey;
-use ParagonIE\HiddenString\HiddenString;
-
+use Paragon_Ie\Constant_Time\Binary;
+use Paragon_Ie\Halite\Alerts\Invalid_Key;
+use Paragon_Ie\Hidden_String\Hidden_String;
 use function sodium_crypto_sign_ed25519_pk_to_curve25519;
-
 use const SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES;
-
-use SodiumException;
-
+use Sodium_Exception;
 use function sprintf;
-
 use TypeError;
-
 /**
  * Class SignaturePublicKey
  * @package ParagonIE\Halite\Asymmetric
@@ -26,7 +19,7 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-final class SignaturePublicKey extends PublicKey
+final class Signature_Public_Key extends Public_Key
 {
     /**
      * SignaturePublicKey constructor.
@@ -36,20 +29,14 @@ final class SignaturePublicKey extends PublicKey
      * @throws InvalidKey
      * @throws TypeError
      */
-    public function __construct(HiddenString $keyMaterial)
+    public function __construct(Hidden_String $key_material)
     {
-        if (Binary::safeStrlen($keyMaterial->getString()) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
-            throw new InvalidKey(
-                sprintf(
-                    'Signature public key must be CRYPTO_SIGN_PUBLICKEYBYTES (%d) bytes long',
-                    SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES
-                )
-            );
+        if (Binary::safe_strlen($key_material->get_string()) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+            throw new Invalid_Key(sprintf('Signature public key must be CRYPTO_SIGN_PUBLICKEYBYTES (%d) bytes long', SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES));
         }
-        parent::__construct($keyMaterial);
-        $this->isSigningKey = true;
+        parent::__construct($key_material);
+        $this->is_signing_key = true;
     }
-
     /**
      * Get an encryption public key from a signing public key.
      *
@@ -58,14 +45,10 @@ final class SignaturePublicKey extends PublicKey
      * @throws TypeError
      * @throws InvalidKey
      */
-    public function getEncryptionPublicKey(): EncryptionPublicKey
+    public function get_encryption_public_key(): Encryption_Public_Key
     {
-        $ed25519_pk = $this->getRawKeyMaterial();
-        $x25519_pk = sodium_crypto_sign_ed25519_pk_to_curve25519(
-            $ed25519_pk
-        );
-        return new EncryptionPublicKey(
-            new HiddenString($x25519_pk)
-        );
+        $ed25519_pk = $this->get_raw_key_material();
+        $x25519_pk = sodium_crypto_sign_ed25519_pk_to_curve25519($ed25519_pk);
+        return new Encryption_Public_Key(new Hidden_String($x25519_pk));
     }
 }

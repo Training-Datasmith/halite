@@ -1,14 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
-namespace ParagonIE\Halite;
-
-use ParagonIE\Halite\Asymmetric\{
-    PublicKey,
-    SecretKey
-};
-
+use Paragon_Ie\Halite\Asymmetric\{Public_Key, Secret_Key};
 /**
  * Class KeyPair
  *
@@ -25,11 +20,10 @@ use ParagonIE\Halite\Asymmetric\{
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class KeyPair
+class Key_Pair
 {
-    protected SecretKey $secretKey;
-    protected PublicKey $publicKey;
-
+    protected Secret_Key $secret_key;
+    protected Public_Key $public_key;
     /**
      * Hide this from var_dump(), etc.
      *
@@ -38,29 +32,24 @@ class KeyPair
      */
     public function __debugInfo()
     {
-        return [
-            'privateKey' => '**protected**',
-            'publicKey' => '**protected**',
-        ];
+        return ['privateKey' => '**protected**', 'publicKey' => '**protected**'];
     }
-
     /**
      * Get a Key object for the public key
      *
      * @codeCoverageIgnore
      */
-    public function getPublicKey(): \ParagonIE\Halite\Asymmetric\PublicKey
+    public function get_public_key(): \Paragon_Ie\Halite\Asymmetric\Public_Key
     {
-        return $this->publicKey;
+        return $this->public_key;
     }
-
     /**
      * Get a Key object for the secret key
      *
      * @codeCoverageIgnore
      */
-    public function getSecretKey(): \ParagonIE\Halite\Asymmetric\SecretKey
+    public function get_secret_key(): \Paragon_Ie\Halite\Asymmetric\Secret_Key
     {
-        return $this->secretKey;
+        return $this->secret_key;
     }
 }

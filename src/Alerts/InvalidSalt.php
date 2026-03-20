@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite\Alerts;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Alerts;
 
 /**
  * Class InvalidSalt
@@ -13,6 +12,6 @@ namespace ParagonIE\Halite\Alerts;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class InvalidSalt extends HaliteAlert implements HaliteAlertInterface
+class Invalid_Salt extends Halite_Alert implements Halite_Alert_Interface
 {
 }

@@ -1,17 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Structure;
 
-namespace ParagonIE\Halite\Structure;
-
-use ParagonIE\Halite\Alerts\CannotPerformOperation;
-use ParagonIE\Halite\Util;
-
+use Paragon_Ie\Halite\Alerts\Cannot_Perform_Operation;
+use Paragon_Ie\Halite\Util;
 use const SODIUM_CRYPTO_GENERICHASH_BYTES;
-
-use SodiumException;
+use Sodium_Exception;
 use TypeError;
-
 /**
  * Class Node
  *
@@ -34,15 +30,13 @@ class Node
     public function __construct(private readonly string $data)
     {
     }
-
     /**
      * Get the data
      */
-    public function getData(): string
+    public function get_data(): string
     {
         return $this->data;
     }
-
     /**
      * Get a hash of the data (defaults to hex encoded)
      *
@@ -55,29 +49,19 @@ class Node
      * @throws TypeError
      * @throws SodiumException
      */
-    public function getHash(
-        bool $raw = false,
-        int $outputSize = SODIUM_CRYPTO_GENERICHASH_BYTES,
-        string $personalization = ''
-    ): string {
+    public function get_hash(bool $raw = false, int $output_size = SODIUM_CRYPTO_GENERICHASH_BYTES, string $personalization = ''): string
+    {
         if ($raw) {
-            return Util::raw_hash(
-                $personalization . $this->data,
-                $outputSize
-            );
+            return Util::raw_hash($personalization . $this->data, $output_size);
         }
-        return Util::hash(
-            $personalization . $this->data,
-            $outputSize
-        );
+        return Util::hash($personalization . $this->data, $output_size);
     }
-
     /**
      * Nodes are immutable, but you can create one with extra data.
      *
      *
      */
-    public function getExpandedNode(string $concat): Node
+    public function get_expanded_node(string $concat): Node
     {
         return new Node($this->data . $concat);
     }

@@ -1,25 +1,18 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Asymmetric;
 
-namespace ParagonIE\Halite\Asymmetric;
-
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\Halite\Alerts\InvalidKey;
-use ParagonIE\HiddenString\HiddenString;
-
+use Paragon_Ie\Constant_Time\Binary;
+use Paragon_Ie\Halite\Alerts\Invalid_Key;
+use Paragon_Ie\Hidden_String\Hidden_String;
 use function sodium_crypto_sign_ed25519_pk_to_curve25519;
 use function sodium_crypto_sign_ed25519_sk_to_curve25519;
 use function sodium_crypto_sign_publickey_from_secretkey;
-
 use const SODIUM_CRYPTO_SIGN_SECRETKEYBYTES;
-
-use SodiumException;
-
+use Sodium_Exception;
 use function sprintf;
-
 use TypeError;
-
 /**
  * Class SignatureSecretKey
  * @package ParagonIE\Halite\Asymmetric
@@ -28,7 +21,7 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-final class SignatureSecretKey extends SecretKey
+final class Signature_Secret_Key extends Secret_Key
 {
     /**
      * SignatureSecretKey constructor.
@@ -39,22 +32,17 @@ final class SignatureSecretKey extends SecretKey
      * @throws TypeError
      */
     public function __construct(
-        #[\SensitiveParameter]
-        HiddenString $keyMaterial,
-        ?HiddenString $pk = null
-    ) {
-        if (Binary::safeStrlen($keyMaterial->getString()) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
-            throw new InvalidKey(
-                sprintf(
-                    'Signature secret key must be CRYPTO_SIGN_SECRETKEYBYTES (%d) bytes long',
-                    SODIUM_CRYPTO_SIGN_SECRETKEYBYTES
-                )
-            );
+        #[\Sensitive_Parameter]
+        Hidden_String $key_material,
+        ?Hidden_String $pk = null
+    )
+    {
+        if (Binary::safe_strlen($key_material->get_string()) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
+            throw new Invalid_Key(sprintf('Signature secret key must be CRYPTO_SIGN_SECRETKEYBYTES (%d) bytes long', SODIUM_CRYPTO_SIGN_SECRETKEYBYTES));
         }
-        parent::__construct($keyMaterial, $pk);
-        $this->isSigningKey = true;
+        parent::__construct($key_material, $pk);
+        $this->is_signing_key = true;
     }
-
     /**
      * See the appropriate derived class.
      *
@@ -62,16 +50,13 @@ final class SignatureSecretKey extends SecretKey
      * @throws SodiumException
      * @throws TypeError
      */
-    public function derivePublicKey(): SignaturePublicKey
+    public function derive_public_key(): Signature_Public_Key
     {
-        if (is_null($this->cachedPublicKey)) {
-            $this->cachedPublicKey = sodium_crypto_sign_publickey_from_secretkey(
-                $this->getRawKeyMaterial()
-            );
+        if (is_null($this->cached_public_key)) {
+            $this->cached_public_key = sodium_crypto_sign_publickey_from_secretkey($this->get_raw_key_material());
         }
-        return new SignaturePublicKey(new HiddenString($this->cachedPublicKey));
+        return new Signature_Public_Key(new Hidden_String($this->cached_public_key));
     }
-
     /**
      * Get an encryption secret key from a signing secret key.
      *
@@ -79,23 +64,14 @@ final class SignatureSecretKey extends SecretKey
      * @throws SodiumException
      * @throws TypeError
      */
-    public function getEncryptionSecretKey(): EncryptionSecretKey
+    public function get_encryption_secret_key(): Encryption_Secret_Key
     {
-        $ed25519_sk = $this->getRawKeyMaterial();
-        $x25519_sk = sodium_crypto_sign_ed25519_sk_to_curve25519(
-            $ed25519_sk
-        );
-        if (!is_null($this->cachedPublicKey)) {
-            $x25519_pk = sodium_crypto_sign_ed25519_pk_to_curve25519(
-                $this->cachedPublicKey
-            );
-            return new EncryptionSecretKey(
-                new HiddenString($x25519_sk),
-                new HiddenString($x25519_pk)
-            );
+        $ed25519_sk = $this->get_raw_key_material();
+        $x25519_sk = sodium_crypto_sign_ed25519_sk_to_curve25519($ed25519_sk);
+        if (!is_null($this->cached_public_key)) {
+            $x25519_pk = sodium_crypto_sign_ed25519_pk_to_curve25519($this->cached_public_key);
+            return new Encryption_Secret_Key(new Hidden_String($x25519_sk), new Hidden_String($x25519_pk));
         }
-        return new EncryptionSecretKey(
-            new HiddenString($x25519_sk)
-        );
+        return new Encryption_Secret_Key(new Hidden_String($x25519_sk));
     }
 }

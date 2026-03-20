@@ -1,39 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
 use function hash_equals;
 use function is_string;
 use function json_decode;
 use function json_encode;
 use function preg_match;
-
-use ParagonIE\ConstantTime\{
-    Base64UrlSafe,
-    Binary,
-    Hex
-};
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    InvalidDigestLength,
-    InvalidMessage,
-    InvalidSignature,
-    InvalidType
-};
-use ParagonIE\Halite\Symmetric\{
-    Config as SymmetricConfig,
-    Crypto,
-    EncryptionKey
-};
-use ParagonIE\HiddenString\HiddenString;
-
+use Paragon_Ie\Constant_Time\{Base64url_Safe, Binary, Hex};
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, Invalid_Digest_Length, Invalid_Message, Invalid_Signature, Invalid_Type};
+use Paragon_Ie\Halite\Symmetric\{Config as SymmetricConfig, Crypto, Encryption_Key};
+use Paragon_Ie\Hidden_String\Hidden_String;
 use function setcookie;
-
-use SodiumException;
+use Sodium_Exception;
 use TypeError;
-
 /**
  * Class Cookie
  *
@@ -57,20 +38,16 @@ final class Cookie
     /**
      * Cookie constructor.
      */
-    public function __construct(protected EncryptionKey $key)
+    public function __construct(protected Encryption_Key $key)
     {
     }
-
     /**
      * Hide this from var_dump(), etc.
      */
     public function __debugInfo(): array
     {
-        return [
-            'key' => 'private',
-        ];
+        return ['key' => 'private'];
     }
-
     /**
      * Fetch a value from an encrypted cookie
      *
@@ -85,9 +62,10 @@ final class Cookie
      * @throws TypeError
      */
     public function fetch(
-        #[\SensitiveParameter]
+        #[\Sensitive_Parameter]
         string $name
-    ) {
+    )
+    {
         if (!isset($_COOKIE[$name])) {
             return null;
         }
@@ -95,21 +73,16 @@ final class Cookie
             /** @var string|array|int|float|bool $stored */
             $stored = $_COOKIE[$name];
             if (!is_string($stored)) {
-                throw new InvalidType('Cookie value is not a string');
+                throw new Invalid_Type('Cookie value is not a string');
             }
-            $config = self::getConfig($stored);
+            $config = self::get_config($stored);
             $encoding = $config->ENCODING;
-            $decrypted = Crypto::decrypt(
-                $stored,
-                $this->key,
-                $encoding
-            );
-            return json_decode($decrypted->getString(), true);
-        } catch (InvalidMessage) {
+            $decrypted = Crypto::decrypt($stored, $this->key, $encoding);
+            return json_decode($decrypted->get_string(), true);
+        } catch (Invalid_Message) {
             return null;
         }
     }
-
     /**
      * Get the configuration for this version of halite
      *
@@ -118,26 +91,20 @@ final class Cookie
      * @throws InvalidMessage
      * @throws TypeError
      */
-    protected static function getConfig(string $stored): SymmetricConfig
+    protected static function get_config(string $stored): Symmetric_Config
     {
-        $length = Binary::safeStrlen($stored);
+        $length = Binary::safe_strlen($stored);
         // This doesn't even have a header.
         if ($length < 8) {
-            throw new InvalidMessage(
-                'Encrypted password hash is way too short.'
-            );
+            throw new Invalid_Message('Encrypted password hash is way too short.');
         }
-        if (hash_equals(Binary::safeSubstr($stored, 0, 5), Halite::VERSION_PREFIX)) {
-            $decoded = Base64UrlSafe::decode($stored);
-            return SymmetricConfig::getConfig(
-                $decoded,
-                'encrypt'
-            );
+        if (hash_equals(Binary::safe_substr($stored, 0, 5), Halite::VERSION_PREFIX)) {
+            $decoded = Base64url_Safe::decode($stored);
+            return Symmetric_Config::get_config($decoded, 'encrypt');
         }
-        $v = Hex::decode(Binary::safeSubstr($stored, 0, 8));
-        return SymmetricConfig::getConfig($v, 'encrypt');
+        $v = Hex::decode(Binary::safe_substr($stored, 0, 8));
+        return Symmetric_Config::get_config($v, 'encrypt');
     }
-
     /**
      * Store a value in an encrypted cookie
      *
@@ -161,42 +128,24 @@ final class Cookie
      * @psalm-suppress MixedArgument
      */
     public function store(
-        #[\SensitiveParameter]
+        #[\Sensitive_Parameter]
         string $name,
-        #[\SensitiveParameter]
+        #[\Sensitive_Parameter]
         $value,
         int $expire = 0,
         string $path = '/',
         string $domain = '',
         bool $secure = true,
-        bool $httpOnly = true,
-        string $sameSite = 'Lax'
-    ): bool {
+        bool $http_only = true,
+        string $same_site = 'Lax'
+    ): bool
+    {
         // RFC 6265: cookie names must not contain separators or control characters
-        if (preg_match('/[\x00-\x1f\x7f()<>@,;:\\\\\"\/\[\]?={} \t]/', $name)) {
-            throw new \InvalidArgumentException(
-                'Invalid cookie name: contains characters forbidden by RFC 6265.'
-            );
+        if (preg_match('/[\x00-\x1f\x7f()<>@,;:\\\\\\"\/\[\]?={} \t]/', $name)) {
+            throw new \InvalidArgumentException('Invalid cookie name: contains characters forbidden by RFC 6265.');
         }
-
-        $val = Crypto::encrypt(
-            new HiddenString(
-                (string) json_encode($value)
-            ),
-            $this->key
-        );
-        $options = [
-            'expires' => $expire,
-            'path' => $path,
-            'domain' => $domain,
-            'secure' => $secure,
-            'httponly' => $httpOnly,
-            'samesite' => $sameSite,
-        ];
-        return setcookie(
-            $name,
-            $val,
-            $options
-        );
+        $val = Crypto::encrypt(new Hidden_String((string) json_encode($value)), $this->key);
+        $options = ['expires' => $expire, 'path' => $path, 'domain' => $domain, 'secure' => $secure, 'httponly' => $http_only, 'samesite' => $same_site];
+        return setcookie($name, $val, $options);
     }
 }

@@ -1,48 +1,29 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
 use function array_values;
 use function count;
-
 use Error;
-
 use function implode;
 use function pack;
-
-use ParagonIE\ConstantTime\{
-    Binary,
-    Hex
-};
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    InvalidDigestLength,
-    InvalidType
-};
-use ParagonIE\Halite\Symmetric\EncryptionKey;
+use Paragon_Ie\Constant_Time\{Binary, Hex};
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, Invalid_Digest_Length, Invalid_Type};
+use Paragon_Ie\Halite\Symmetric\Encryption_Key;
 use RangeException;
-
 use function sodium_crypto_generichash;
-
 use const SODIUM_CRYPTO_GENERICHASH_BYTES;
 use const SODIUM_CRYPTO_GENERICHASH_BYTES_MAX;
 use const SODIUM_CRYPTO_GENERICHASH_BYTES_MIN;
 use const SODIUM_CRYPTO_GENERICHASH_KEYBYTES;
-
 use function sodium_memzero;
-
-use SodiumException;
-
+use Sodium_Exception;
 use function sprintf;
 use function str_repeat;
-
 use Throwable;
 use TypeError;
-
 use function unpack;
-
 /**
  * Class Util
  *
@@ -70,7 +51,6 @@ final class Util
     {
         throw new Error('Do not instantiate');
     }
-
     /**
      * Convert a character to an integer (without cache-timing side-channels)
      *
@@ -78,15 +58,14 @@ final class Util
      *
      * @throws RangeException
      */
-    public static function chrToInt(string $chr): int
+    public static function chr_to_int(string $chr): int
     {
-        if (Binary::safeStrlen($chr) !== 1) {
+        if (Binary::safe_strlen($chr) !== 1) {
             throw new RangeException('Must be a string with a length of 1');
         }
         $result = unpack('C', $chr);
         return (int) $result[1];
     }
-
     /**
      * Wrapper around sodium_crypto_generichash()
      *
@@ -98,15 +77,10 @@ final class Util
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function hash(
-        string $input,
-        int $length = SODIUM_CRYPTO_GENERICHASH_BYTES
-    ): string {
-        return Hex::encode(
-            self::raw_keyed_hash($input, '', $length)
-        );
+    public static function hash(string $input, int $length = SODIUM_CRYPTO_GENERICHASH_BYTES): string
+    {
+        return Hex::encode(self::raw_keyed_hash($input, '', $length));
     }
-
     /**
      * Wrapper around sodium_crypto_generichash()
      *
@@ -117,13 +91,10 @@ final class Util
      * @throws CannotPerformOperation
      * @throws SodiumException
      */
-    public static function raw_hash(
-        string $input,
-        int $length = SODIUM_CRYPTO_GENERICHASH_BYTES
-    ): string {
+    public static function raw_hash(string $input, int $length = SODIUM_CRYPTO_GENERICHASH_BYTES): string
+    {
         return self::raw_keyed_hash($input, '', $length);
     }
-
     /**
      * Use a derivative of HKDF to derive multiple keys from one.
      * https://datatracker.ietf.org/doc/html/rfc5869
@@ -144,17 +115,11 @@ final class Util
      * @throws TypeError
      * @throws SodiumException
      */
-    public static function hkdfBlake2b(
-        string $ikm,
-        int $length,
-        string $info = '',
-        string $salt = ''
-    ): string {
+    public static function hkdf_blake2b(string $ikm, int $length, string $info = '', string $salt = ''): string
+    {
         // Sanity-check the desired output length.
-        if ($length < 0 || $length > (255 * SODIUM_CRYPTO_GENERICHASH_KEYBYTES)) {
-            throw new InvalidDigestLength(
-                'Argument 2: Bad HKDF Digest Length'
-            );
+        if ($length < 0 || $length > 255 * SODIUM_CRYPTO_GENERICHASH_KEYBYTES) {
+            throw new Invalid_Digest_Length('Argument 2: Bad HKDF Digest Length');
         }
         // "If [salt] not provided, is set to a string of HashLen zeroes."
         if (empty($salt)) {
@@ -162,7 +127,6 @@ final class Util
             $salt = str_repeat("\x00", SODIUM_CRYPTO_GENERICHASH_KEYBYTES);
             // @codeCoverageIgnoreEnd
         }
-
         // HKDF-Extract:
         // PRK = HMAC-Hash(salt, IKM)
         // The salt is the HMAC key.
@@ -170,57 +134,45 @@ final class Util
         // Note: The notation used by the RFC is backwards from what we're doing here.
         // They use (Key, Msg) while our API is (Msg, Key).
         $prk = self::raw_keyed_hash($ikm, $salt);
-
         // HKDF-Expand:
         // This check is useless, but it serves as a reminder to the spec.
         // @codeCoverageIgnoreStart
-        if (Binary::safeStrlen($prk) < SODIUM_CRYPTO_GENERICHASH_KEYBYTES) {
-            throw new CannotPerformOperation(
-                'An unknown error has occurred'
-            );
+        if (Binary::safe_strlen($prk) < SODIUM_CRYPTO_GENERICHASH_KEYBYTES) {
+            throw new Cannot_Perform_Operation('An unknown error has occurred');
         }
         // @codeCoverageIgnoreEnd
         // T(0) = ''
         $t = '';
         $last_block = '';
-        for ($block_index = 1; Binary::safeStrlen($t) < $length; ++$block_index) {
+        for ($block_index = 1; Binary::safe_strlen($t) < $length; ++$block_index) {
             // T(i) = HMAC-Hash(PRK, T(i-1) | info | 0x??)
-            $last_block = self::raw_keyed_hash(
-                $last_block . $info . pack('C', $block_index),
-                $prk
-            );
+            $last_block = self::raw_keyed_hash($last_block . $info . pack('C', $block_index), $prk);
             // T = T(1) | T(2) | T(3) | ... | T(N)
             $t .= $last_block;
         }
         // ORM = first L octets of T
-        return Binary::safeSubstr($t, 0, $length);
+        return Binary::safe_substr($t, 0, $length);
     }
-
     /**
      * Convert an array of integers to a string
      *
      * @param array<int, int> $integers
      */
-    public static function intArrayToString(array $integers): string
+    public static function int_array_to_string(array $integers): string
     {
         $args = $integers;
         foreach ($args as $i => $v) {
             $args[$i] = $v & 0xff;
         }
-        return pack(
-            str_repeat('C', count($args)),
-            ...$args
-        );
+        return pack(str_repeat('C', count($args)), ...$args);
     }
-
     /**
      * Convert an integer to a string (without cache-timing side-channels)
      */
-    public static function intToChr(int $int): string
+    public static function int_to_chr(int $int): string
     {
         return pack('C', $int);
     }
-
     /**
      * Wrapper around SODIUM_CRypto_generichash()
      *
@@ -233,16 +185,10 @@ final class Util
      * @throws TypeError
      * @throws SodiumException
      */
-    public static function keyed_hash(
-        string $input,
-        string $key,
-        int $length = SODIUM_CRYPTO_GENERICHASH_BYTES
-    ): string {
-        return Hex::encode(
-            self::raw_keyed_hash($input, $key, $length)
-        );
+    public static function keyed_hash(string $input, string $key, int $length = SODIUM_CRYPTO_GENERICHASH_BYTES): string
+    {
+        return Hex::encode(self::raw_keyed_hash($input, $key, $length));
     }
-
     /**
      * Pre-authentication encoding
      *
@@ -253,11 +199,10 @@ final class Util
         $out = [];
         $out[] = pack('P', count($pieces));
         foreach ($pieces as $piece) {
-            $out[] = pack('P', Binary::safeStrlen($piece)) . $piece;
+            $out[] = pack('P', Binary::safe_strlen($piece)) . $piece;
         }
         return implode('', $out);
     }
-
     /**
      * Wrapper around SODIUM_CRypto_generichash()
      *
@@ -269,30 +214,16 @@ final class Util
      * @throws CannotPerformOperation
      * @throws SodiumException
      */
-    public static function raw_keyed_hash(
-        string $input,
-        string $key,
-        int $length = SODIUM_CRYPTO_GENERICHASH_BYTES
-    ): string {
+    public static function raw_keyed_hash(string $input, string $key, int $length = SODIUM_CRYPTO_GENERICHASH_BYTES): string
+    {
         if ($length < SODIUM_CRYPTO_GENERICHASH_BYTES_MIN) {
-            throw new CannotPerformOperation(
-                sprintf(
-                    'Output length must be at least %d bytes.',
-                    SODIUM_CRYPTO_GENERICHASH_BYTES_MIN
-                )
-            );
+            throw new Cannot_Perform_Operation(sprintf('Output length must be at least %d bytes.', SODIUM_CRYPTO_GENERICHASH_BYTES_MIN));
         }
         if ($length > SODIUM_CRYPTO_GENERICHASH_BYTES_MAX) {
-            throw new CannotPerformOperation(
-                sprintf(
-                    'Output length must be at most %d bytes.',
-                    SODIUM_CRYPTO_GENERICHASH_BYTES_MAX
-                )
-            );
+            throw new Cannot_Perform_Operation(sprintf('Output length must be at most %d bytes.', SODIUM_CRYPTO_GENERICHASH_BYTES_MAX));
         }
         return sodium_crypto_generichash($input, $key, $length);
     }
-
     /**
      * PHP 7 uses interned strings. We don't want altering this one to alter
      * the original string.
@@ -301,20 +232,19 @@ final class Util
      *
      * @throws TypeError
      */
-    public static function safeStrcpy(string $string): string
+    public static function safe_strcpy(string $string): string
     {
-        $length = Binary::safeStrlen($string);
+        $length = Binary::safe_strlen($string);
         $return = '';
         $chunk = $length >> 1;
         if ($chunk < 1) {
             $chunk = 1;
         }
         for ($i = 0; $i < $length; $i += $chunk) {
-            $return .= Binary::safeSubstr($string, $i, $chunk);
+            $return .= Binary::safe_substr($string, $i, $chunk);
         }
         return $return;
     }
-
     /**
      * Split a key (using HKDF-BLAKE2b instead of HKDF-HMAC-*)
      *
@@ -326,13 +256,9 @@ final class Util
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function splitKeys(
-        EncryptionKey $master,
-        string $salt,
-        Config $config
-    ): array {
-        $binary = $master->getRawKeyMaterial();
-
+    public static function split_keys(Encryption_Key $master, string $salt, Config $config): array
+    {
+        $binary = $master->get_raw_key_material();
         /*
          * From Halite version 5, we use the HKDF info parameter instead of the salt.
          * This does two things:
@@ -341,37 +267,16 @@ final class Util
          * 2. It allows us to reuse the intermediary step and make key derivation faster.
          */
         if ($config->HKDF_USE_INFO) {
-            $prk = self::raw_keyed_hash(
-                $binary,
-                str_repeat("\x00", SODIUM_CRYPTO_GENERICHASH_KEYBYTES)
-            );
-            $return = [
-                self::raw_keyed_hash(($config->HKDF_SBOX) . $salt . "\x01", $prk),
-                self::raw_keyed_hash(($config->HKDF_AUTH) . $salt . "\x01", $prk),
-            ];
+            $prk = self::raw_keyed_hash($binary, str_repeat("\x00", SODIUM_CRYPTO_GENERICHASH_KEYBYTES));
+            $return = [self::raw_keyed_hash($config->HKDF_SBOX . $salt . "\x01", $prk), self::raw_keyed_hash($config->HKDF_AUTH . $salt . "\x01", $prk)];
             self::memzero($prk);
             return $return;
         }
-
         /*
          * Halite 4 and blow used this strategy:
          */
-        return [
-            Util::hkdfBlake2b(
-                $binary,
-                SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
-                (string) $config->HKDF_SBOX,
-                $salt
-            ),
-            Util::hkdfBlake2b(
-                $binary,
-                SODIUM_CRYPTO_AUTH_KEYBYTES,
-                (string) $config->HKDF_AUTH,
-                $salt
-            ),
-        ];
+        return [Util::hkdf_blake2b($binary, SODIUM_CRYPTO_SECRETBOX_KEYBYTES, (string) $config->HKDF_SBOX, $salt), Util::hkdf_blake2b($binary, SODIUM_CRYPTO_AUTH_KEYBYTES, (string) $config->HKDF_AUTH, $salt)];
     }
-
     /**
      * Turn a string into an array of integers
      *
@@ -379,7 +284,7 @@ final class Util
      * @return array<int, int>
      * @throws TypeError
      */
-    public static function stringToIntArray(string $string): array
+    public static function string_to_int_array(string $string): array
     {
         /**
          * @var array<int, int>
@@ -387,7 +292,6 @@ final class Util
         $values = array_values(unpack('C*', $string));
         return $values;
     }
-
     /**
      * Calculate A xor B, given two binary strings of the same length.
      *
@@ -395,20 +299,17 @@ final class Util
      *
      * @throws InvalidType
      */
-    public static function xorStrings(string $left, string $right): string
+    public static function xor_strings(string $left, string $right): string
     {
-        $length = Binary::safeStrlen($left);
-        if ($length !== Binary::safeStrlen($right)) {
-            throw new InvalidType(
-                'Both strings must be the same length'
-            );
+        $length = Binary::safe_strlen($left);
+        if ($length !== Binary::safe_strlen($right)) {
+            throw new Invalid_Type('Both strings must be the same length');
         }
         if ($length < 1) {
             return '';
         }
         return $left ^ $right;
     }
-
     /**
      * Wrap memzero() without breaking on sodium_compat
      *

@@ -1,38 +1,18 @@
 <?php
 
-declare(strict_types=1);
-
-namespace ParagonIE\Halite;
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
 use function hash_equals;
-
-use ParagonIE\ConstantTime\{
-    Base64UrlSafe,
-    Binary,
-    Hex
-};
-use ParagonIE\Halite\Alerts\{
-    CannotPerformOperation,
-    InvalidDigestLength,
-    InvalidMessage,
-    InvalidSignature,
-    InvalidType
-};
-use ParagonIE\Halite\Symmetric\{
-    Config as SymmetricConfig,
-    Crypto,
-    EncryptionKey
-};
-use ParagonIE\HiddenString\HiddenString;
-
+use Paragon_Ie\Constant_Time\{Base64url_Safe, Binary, Hex};
+use Paragon_Ie\Halite\Alerts\{Cannot_Perform_Operation, Invalid_Digest_Length, Invalid_Message, Invalid_Signature, Invalid_Type};
+use Paragon_Ie\Halite\Symmetric\{Config as SymmetricConfig, Crypto, Encryption_Key};
+use Paragon_Ie\Hidden_String\Hidden_String;
 use function sodium_crypto_pwhash_str;
 use function sodium_crypto_pwhash_str_verify;
-
 use const SODIUM_CRYPTO_PWHASH_STRPREFIX;
-
-use SodiumException;
+use Sodium_Exception;
 use TypeError;
-
 /**
  * Class Password
  *
@@ -69,30 +49,21 @@ final class Password
      * @throws TypeError
      */
     public static function hash(
-        #[\SensitiveParameter]
-        HiddenString $password,
-        #[\SensitiveParameter]
-        EncryptionKey $secretKey,
-        string $level = KeyFactory::INTERACTIVE,
-        #[\SensitiveParameter]
-        string $additionalData = ''
-    ): string {
-        $kdfLimits = KeyFactory::getSecurityLevels($level);
+        #[\Sensitive_Parameter]
+        Hidden_String $password,
+        #[\Sensitive_Parameter]
+        Encryption_Key $secret_key,
+        string $level = Key_Factory::INTERACTIVE,
+        #[\Sensitive_Parameter]
+        string $additional_data = ''
+    ): string
+    {
+        $kdf_limits = Key_Factory::get_security_levels($level);
         // First, let's calculate the hash
-        $hashed = sodium_crypto_pwhash_str(
-            $password->getString(),
-            $kdfLimits[0],
-            $kdfLimits[1]
-        );
-
+        $hashed = sodium_crypto_pwhash_str($password->get_string(), $kdf_limits[0], $kdf_limits[1]);
         // Now let's encrypt the result
-        return Crypto::encryptWithAd(
-            new HiddenString($hashed),
-            $secretKey,
-            $additionalData
-        );
+        return Crypto::encrypt_with_ad(new Hidden_String($hashed), $secret_key, $additional_data);
     }
-
     /**
      * Is this password hash stale?
      *
@@ -112,55 +83,35 @@ final class Password
      * @throws SodiumException
      * @throws TypeError
      */
-    public static function needsRehash(
-        #[\SensitiveParameter]
+    public static function needs_rehash(
+        #[\Sensitive_Parameter]
         string $stored,
-        #[\SensitiveParameter]
-        EncryptionKey $secretKey,
-        string $level = KeyFactory::INTERACTIVE,
-        #[\SensitiveParameter]
-        string $additionalData = ''
-    ): bool {
-        $config = self::getConfig($stored);
-        if (Binary::safeStrlen($stored) < ((int) $config->SHORTEST_CIPHERTEXT_LENGTH * 4 / 3)) {
-            throw new InvalidMessage('Encrypted password hash is too short.');
+        #[\Sensitive_Parameter]
+        Encryption_Key $secret_key,
+        string $level = Key_Factory::INTERACTIVE,
+        #[\Sensitive_Parameter]
+        string $additional_data = ''
+    ): bool
+    {
+        $config = self::get_config($stored);
+        if (Binary::safe_strlen($stored) < (int) $config->SHORTEST_CIPHERTEXT_LENGTH * 4 / 3) {
+            throw new Invalid_Message('Encrypted password hash is too short.');
         }
         $encoding = $config->ENCODING;
-
         // First let's decrypt the hash
-        $hash_str = Crypto::decryptWithAd(
-            $stored,
-            $secretKey,
-            $additionalData,
-            $encoding
-        )->getString();
-
+        $hash_str = Crypto::decrypt_with_ad($stored, $secret_key, $additional_data, $encoding)->get_string();
         // Upon successful decryption, verify that we're using Argon2id
-        if (!hash_equals(
-            Binary::safeSubstr($hash_str, 0, 10),
-            SODIUM_CRYPTO_PWHASH_STRPREFIX
-        )) {
+        if (!hash_equals(Binary::safe_substr($hash_str, 0, 10), SODIUM_CRYPTO_PWHASH_STRPREFIX)) {
             return true;
         }
-
         // Parse the cost parameters:
         return match ($level) {
-            KeyFactory::INTERACTIVE => !hash_equals(
-                '$argon2id$v=19$m=65536,t=2,p=1$',
-                Binary::safeSubstr($hash_str, 0, 31)
-            ),
-            KeyFactory::MODERATE => !hash_equals(
-                '$argon2id$v=19$m=262144,t=3,p=1$',
-                Binary::safeSubstr($hash_str, 0, 32)
-            ),
-            KeyFactory::SENSITIVE => !hash_equals(
-                '$argon2id$v=19$m=1048576,t=4,p=1$',
-                Binary::safeSubstr($hash_str, 0, 33)
-            ),
+            Key_Factory::INTERACTIVE => !hash_equals('$argon2id$v=19$m=65536,t=2,p=1$', Binary::safe_substr($hash_str, 0, 31)),
+            Key_Factory::MODERATE => !hash_equals('$argon2id$v=19$m=262144,t=3,p=1$', Binary::safe_substr($hash_str, 0, 32)),
+            Key_Factory::SENSITIVE => !hash_equals('$argon2id$v=19$m=1048576,t=4,p=1$', Binary::safe_substr($hash_str, 0, 33)),
             default => true,
         };
     }
-
     /**
      * Get the configuration for this version of halite
      *
@@ -168,31 +119,23 @@ final class Password
      * @throws InvalidMessage
      * @throws \TypeError
      */
-    protected static function getConfig(string $stored): SymmetricConfig
+    protected static function get_config(string $stored): Symmetric_Config
     {
-        $length = Binary::safeStrlen($stored);
+        $length = Binary::safe_strlen($stored);
         // This doesn't even have a header.
         if ($length < 8) {
-            throw new InvalidMessage(
-                'Encrypted password hash is way too short.'
-            );
+            throw new Invalid_Message('Encrypted password hash is way too short.');
         }
-        $prefix = Binary::safeSubstr($stored, 0, 5);
-        if (
-            hash_equals($prefix, Halite::VERSION_PREFIX)
-                ||
-            hash_equals($prefix, Halite::VERSION_OLD_PREFIX)
-        ) {
-            $decoded = Base64UrlSafe::decode($stored);
-            return SymmetricConfig::getConfig($decoded, 'encrypt');
+        $prefix = Binary::safe_substr($stored, 0, 5);
+        if (hash_equals($prefix, Halite::VERSION_PREFIX) || hash_equals($prefix, Halite::VERSION_OLD_PREFIX)) {
+            $decoded = Base64url_Safe::decode($stored);
+            return Symmetric_Config::get_config($decoded, 'encrypt');
         }
-
         // @codeCoverageIgnoreStart
-        $v = Hex::decode(Binary::safeSubstr($stored, 0, 8));
-        return SymmetricConfig::getConfig($v, 'encrypt');
+        $v = Hex::decode(Binary::safe_substr($stored, 0, 8));
+        return Symmetric_Config::get_config($v, 'encrypt');
         // @codeCoverageIgnoreEnd
     }
-
     /**
      * Decrypt then verify a password
      *
@@ -212,30 +155,25 @@ final class Password
      * @throws TypeError
      */
     public static function verify(
-        #[\SensitiveParameter]
-        HiddenString $password,
-        #[\SensitiveParameter]
+        #[\Sensitive_Parameter]
+        Hidden_String $password,
+        #[\Sensitive_Parameter]
         string $stored,
-        #[\SensitiveParameter]
-        EncryptionKey $secretKey,
-        #[\SensitiveParameter]
-        string $additionalData = ''
-    ): bool {
-        $config = self::getConfig($stored);
+        #[\Sensitive_Parameter]
+        Encryption_Key $secret_key,
+        #[\Sensitive_Parameter]
+        string $additional_data = ''
+    ): bool
+    {
+        $config = self::get_config($stored);
         // Base64-urlsafe encoded, so 4/3 the size of raw binary
-        if (Binary::safeStrlen($stored) < ((int) $config->SHORTEST_CIPHERTEXT_LENGTH * 4 / 3)) {
-            throw new InvalidMessage(
-                'Encrypted password hash is too short.'
-            );
+        if (Binary::safe_strlen($stored) < (int) $config->SHORTEST_CIPHERTEXT_LENGTH * 4 / 3) {
+            throw new Invalid_Message('Encrypted password hash is too short.');
         }
         $encoding = $config->ENCODING;
-
         // First let's decrypt the hash
-        $hash_str = Crypto::decryptWithAd($stored, $secretKey, $additionalData, $encoding);
+        $hash_str = Crypto::decrypt_with_ad($stored, $secret_key, $additional_data, $encoding);
         // Upon successful decryption, verify the password is correct
-        return sodium_crypto_pwhash_str_verify(
-            $hash_str->getString(),
-            $password->getString()
-        );
+        return sodium_crypto_pwhash_str_verify($hash_str->get_string(), $password->get_string());
     }
 }

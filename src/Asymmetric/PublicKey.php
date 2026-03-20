@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Asymmetric;
 
-namespace ParagonIE\Halite\Asymmetric;
-
-use ParagonIE\Halite\Key;
-use ParagonIE\HiddenString\HiddenString;
+use Paragon_Ie\Halite\Key;
+use Paragon_Ie\Hidden_String\Hidden_String;
 use TypeError;
-
 /**
  * Class PublicKey
  * @package ParagonIE\Halite\Asymmetric
@@ -16,7 +14,7 @@ use TypeError;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class PublicKey extends Key
+class Public_Key extends Key
 {
     /**
      * PublicKey constructor.
@@ -24,10 +22,10 @@ class PublicKey extends Key
      *
      * @throws TypeError
      */
-    public function __construct(HiddenString $keyMaterial)
+    public function __construct(Hidden_String $key_material)
     {
-        parent::__construct($keyMaterial);
-        $this->isAsymmetricKey = true;
-        $this->isPublicKey = true;
+        parent::__construct($key_material);
+        $this->is_asymmetric_key = true;
+        $this->is_public_key = true;
     }
 }

@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite\Symmetric;
 
-namespace ParagonIE\Halite\Symmetric;
-
-use ParagonIE\Halite\Key;
-
+use Paragon_Ie\Halite\Key;
 /**
  * Class SecretKey
  * @package ParagonIE\Halite\Symmetric
@@ -14,6 +12,6 @@ use ParagonIE\Halite\Key;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
  */
-class SecretKey extends Key
+class Secret_Key extends Key
 {
 }

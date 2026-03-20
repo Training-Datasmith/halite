@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Paragon_Ie\Halite;
 
-namespace ParagonIE\Halite;
-
-class_alias('ParagonIE\HiddenString\HiddenString', 'ParagonIE\\Halite\\HiddenString');
+class_alias('ParagonIE\HiddenString\HiddenString', 'ParagonIE\Halite\HiddenString');
